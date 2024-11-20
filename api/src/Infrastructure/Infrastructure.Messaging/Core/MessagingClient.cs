@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Formatter;
+using MQTTnet.Packets;
+using MQTTnet.Protocol;
 using System.Buffers;
 
 namespace Homemap.Infrastructure.Messaging.Core
@@ -48,6 +50,8 @@ namespace Homemap.Infrastructure.Messaging.Core
             return Task.CompletedTask;
         }
 
+        #region IHostedService implementation
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await ConnectAsync(cancellationToken);
@@ -73,6 +77,44 @@ namespace Homemap.Infrastructure.Messaging.Core
             _logger.LogInformation("Disconnected from broker...");
         }
 
+        #endregion
+
+        public async Task PublishAsync(string topic, byte[] payload, MessagingClientPublishAsyncOptions options)
+        {
+            MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithPayload(payload)
+                .WithContentType(options.ContentType)
+                .WithQualityOfServiceLevel((MqttQualityOfServiceLevel)options.QoS)
+                .WithRetainFlag(options.IsRetain)
+                .Build();
+
+            await _mqttClient.PublishAsync(applicationMessage);
+            _logger.LogInformation("Published message to topic ({Topic})", topic);
+        }
+
+        public async Task SubscribeAsync(string topic)
+        {
+            MqttTopicFilter topicFilter = new MqttTopicFilterBuilder()
+                .WithTopic(topic)
+                .Build();
+
+            MqttClientSubscribeOptions mqttSubscribeOptions = new MqttClientSubscribeOptionsBuilder()
+                .WithTopicFilter(topicFilter)
+                .Build();
+
+            await _mqttClient.SubscribeAsync(mqttSubscribeOptions);
+            _logger.LogInformation("Subscribed to topic ({Topic})", topic);
+        }
+
+        public async Task UnsubscribeAsync(string topic)
+        {
+            await _mqttClient.UnsubscribeAsync(topic);
+            _logger.LogInformation("Unsubscribed from topic ({Topic})", topic);
+        }
+
+        #region IDisplosable implementation
+
         public void Dispose()
         {
             Dispose(true);
@@ -94,5 +136,7 @@ namespace Homemap.Infrastructure.Messaging.Core
         }
 
         ~MessagingClient() => Dispose(false);
+
+        #endregion
     }
 }

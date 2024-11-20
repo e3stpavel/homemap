@@ -1,5 +1,7 @@
 ﻿using Homemap.Infrastructure.Messaging.Core;
 using Homemap.Infrastructure.Messaging.Models;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Text.Json;
 
@@ -15,15 +17,18 @@ namespace Homemap.Infrastructure.Messaging.Services
 
         protected readonly ConcurrentQueue<T> _receivedMessages = new();
 
-        public MessagingService(MessagingClient messagingClient)
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+
+        public MessagingService(MessagingClient messagingClient, IOptions<JsonOptions> jsonOptions)
         {
             _messagingClient = messagingClient;
+            _jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
             _messagingClient.MessageReceived += MessagingClient_MessageReceived;
         }
 
         private void MessagingClient_MessageReceived(object? sender, MessagingClientMessageReceivedEventArgs args)
         {
-            T? message = JsonSerializer.Deserialize<T>(args.Payload);
+            T? message = JsonSerializer.Deserialize<T>(args.Payload, _jsonSerializerOptions);
 
             if (message is not null)
             {

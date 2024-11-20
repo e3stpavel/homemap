@@ -2,6 +2,8 @@
 using Homemap.ApplicationCore.Interfaces.Messaging;
 using Homemap.ApplicationCore.Models;
 using Homemap.Infrastructure.Messaging.Core;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Options;
 
 namespace Homemap.Infrastructure.Messaging.Services
 {
@@ -11,7 +13,12 @@ namespace Homemap.Infrastructure.Messaging.Services
 
         private readonly IValidator<DeviceLogDto> _validator;
 
-        public DeviceLogMessagingService(MessagingClient messagingClient, IValidator<DeviceLogDto> validator) : base(messagingClient)
+        public DeviceLogMessagingService
+        (
+            MessagingClient messagingClient,
+            IValidator<DeviceLogDto> validator,
+            IOptions<JsonOptions> jsonOptions
+        ) : base(messagingClient, jsonOptions)
         {
             _messagingClient = messagingClient;
             _validator = validator;

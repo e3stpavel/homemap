@@ -16,17 +16,13 @@ public class DevicesController : ControllerBase
 
     private readonly IValidator<DeviceDto> _deviceValidator;
 
-    private readonly IValidator<DeviceStateDto> _deviceStateValidator;
-
     public DevicesController(
         IDeviceService deviceService,
-        IValidator<DeviceDto> deviceValidator,
-        IValidator<DeviceStateDto> deviceStateValidator
+        IValidator<DeviceDto> deviceValidator
     )
     {
         _service = deviceService;
         _deviceValidator = deviceValidator;
-        _deviceStateValidator = deviceStateValidator;
     }
 
     [HttpGet("/api/receivers/{receiverId}/[controller]")]
@@ -53,42 +49,6 @@ public class DevicesController : ControllerBase
             return this.ErrorOf(dtoOrError.FirstError);
 
         return dtoOrError.Value;
-    }
-
-    [HttpGet("{id}/state")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<DeviceStateDto>> GetStateById(int id)
-    {
-        var dtoOrError = await _service.GetStateAsync(id);
-
-        if (dtoOrError.IsError)
-            return this.ErrorOf(dtoOrError.FirstError);
-
-        return dtoOrError.Value;
-    }
-
-    [HttpPost("{id}/state")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SetStateById(int id, DeviceStateDto deviceStateDto)
-    {
-        var validationResult = await _deviceStateValidator.ValidateAsync(deviceStateDto);
-
-        if (!validationResult.IsValid)
-        {
-            validationResult.AddToModelState(ModelState);
-
-            return BadRequest(ModelState);
-        }
-
-        var updatedOrError = await _service.SetStateAsync(id, deviceStateDto);
-
-        if (updatedOrError.IsError)
-            return this.ErrorOf(updatedOrError.FirstError);
-
-        return NoContent();
     }
 
     [HttpPost("/api/receivers/{receiverId}/[controller]")]

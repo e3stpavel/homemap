@@ -1,7 +1,4 @@
-﻿using Homemap.ApplicationCore.Interfaces.Services;
-using Infrastructure.Messaging.Models;
-using Infrastructure.Messaging.Services;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Messaging
@@ -11,12 +8,6 @@ namespace Infrastructure.Messaging
         public static IServiceCollection AddMessagingService(this IServiceCollection services, IConfiguration configuration)
         {
             string connectionString = configuration.GetConnectionString("MqttDefaultConnection") ?? throw new InvalidOperationException("Connection string not found (message queue)");
-
-            services.AddSingleton(_ => new MessagingServiceOptions
-            {
-                ConnectionUri = connectionString
-            });
-            services.AddSingleton(typeof(IMessagingService<>), typeof(MessagingService<>));
 
             return services;
         }

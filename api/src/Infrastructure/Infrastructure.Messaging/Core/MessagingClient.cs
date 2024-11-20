@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Formatter;
+using System.Buffers;
 
 namespace Homemap.Infrastructure.Messaging.Core
 {
@@ -15,6 +16,8 @@ namespace Homemap.Infrastructure.Messaging.Core
         private readonly MqttClientOptions _mqttClientOptions;
 
         private readonly ILogger<MessagingClient> _logger;
+
+        public event EventHandler<MessagingClientMessageReceivedEventArgs>? MessageReceived;
 
         public MessagingClient(MessagingClientOptions options, ILogger<MessagingClient> logger)
         {
@@ -31,6 +34,18 @@ namespace Homemap.Infrastructure.Messaging.Core
                 .Build();
 
             _mqttClientOptions = mqttClientOptions;
+            _mqttClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
+        }
+
+        private Task MqttClient_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs args)
+        {
+            MessageReceived?.Invoke(this, new MessagingClientMessageReceivedEventArgs
+            {
+                Topic = args.ApplicationMessage.Topic,
+                Payload = args.ApplicationMessage.Payload.ToArray(),
+            });
+
+            return Task.CompletedTask;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -70,6 +85,7 @@ namespace Homemap.Infrastructure.Messaging.Core
             {
                 if (isDisposing)
                 {
+                    _mqttClient.ApplicationMessageReceivedAsync -= MqttClient_ApplicationMessageReceivedAsync;
                     _mqttClient.Dispose();
                 }
 

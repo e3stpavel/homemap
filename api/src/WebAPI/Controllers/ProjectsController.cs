@@ -4,7 +4,9 @@ using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Models;
 using Homemap.WebAPI.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Net.Mime;
+using System.Text.Json;
 
 namespace Homemap.WebAPI.Controllers
 {
@@ -16,10 +18,13 @@ namespace Homemap.WebAPI.Controllers
 
         private readonly IValidator<ProjectDto> _validator;
 
-        public ProjectsController(IProjectService service, IValidator<ProjectDto> validator)
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+
+        public ProjectsController(IProjectService service, IValidator<ProjectDto> validator, IOptions<JsonOptions> jsonOptions)
         {
             _service = service;
             _validator = validator;
+            _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
         }
 
         [HttpGet]
@@ -40,6 +45,35 @@ namespace Homemap.WebAPI.Controllers
                 return this.ErrorOf(dtoOrError.FirstError);
 
             return dtoOrError.Value;
+        }
+
+        [HttpGet("{id}/logs/stream")]
+        [Produces("text/event-stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> StreamDeviceLogs(int id, CancellationToken cancellationToken)
+        {
+            Response.ContentType = "text/event-stream";
+            Response.Headers.CacheControl = "no-cache";
+            Response.Headers.Connection = "keep-alive";
+
+            ErrorOr<Success> successOrError = await _service.ListenDeviceLogsByIdAsync(id, cancellationToken);
+            if (successOrError.IsError)
+                return this.ErrorOf(successOrError.FirstError);
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                ErrorOr<DeviceLogDto> deviceLogOrError = await _service.GetDeviceLogAsync(cancellationToken);
+                if (deviceLogOrError.IsError)
+                    continue;
+
+                await Response.WriteAsync("data: ", cancellationToken);
+                await JsonSerializer.SerializeAsync(Response.Body, deviceLogOrError.Value, _jsonSerializerOptions, cancellationToken);
+                await Response.WriteAsync("\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+            }
+
+            return Empty;
         }
 
         [HttpPost]

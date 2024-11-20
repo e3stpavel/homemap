@@ -12,11 +12,11 @@ namespace Homemap.WebAPI.Controllers
     [ApiController]
     public class ProjectsController : ControllerBase
     {
-        private readonly IService<ProjectDto> _service;
+        private readonly IProjectService _service;
 
         private readonly IValidator<ProjectDto> _validator;
 
-        public ProjectsController(IService<ProjectDto> service, IValidator<ProjectDto> validator)
+        public ProjectsController(IProjectService service, IValidator<ProjectDto> validator)
         {
             _service = service;
             _validator = validator;

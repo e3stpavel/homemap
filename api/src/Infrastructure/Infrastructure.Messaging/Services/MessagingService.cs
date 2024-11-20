@@ -47,7 +47,6 @@ namespace Homemap.Infrastructure.Messaging.Services
                 if (isDisposing)
                 {
                     _messagingClient.MessageReceived -= MessagingClient_MessageReceived;
-                    _messagingClient.Dispose();
                     _IsMessageReceived.Dispose();
                 }
 

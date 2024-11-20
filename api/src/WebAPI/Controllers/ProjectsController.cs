@@ -55,7 +55,6 @@ namespace Homemap.WebAPI.Controllers
         {
             Response.ContentType = "text/event-stream";
             Response.Headers.CacheControl = "no-cache";
-            Response.Headers.Connection = "keep-alive";
 
             ErrorOr<Success> successOrError = await _service.ListenDeviceLogsByIdAsync(id, cancellationToken);
             if (successOrError.IsError)

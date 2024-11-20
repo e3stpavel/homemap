@@ -10,5 +10,19 @@ namespace Homemap.ApplicationCore.Errors
                 code: $"{nameof(ApplicationErrors)}.{nameof(EmptyOrCorruptedMessage)}",
                 description);
         }
+
+        public static Error InappropriateMessage(string description)
+        {
+            return Error.Validation(
+                code: $"{nameof(ApplicationErrors)}.{nameof(InappropriateMessage)}",
+                description);
+        }
+
+        public static Error ValueNotPresent(string description = "Value is null or empty.")
+        {
+            return Error.Unexpected(
+                code: $"{nameof(ApplicationErrors)}.{nameof(ValueNotPresent)}",
+                description);
+        }
     }
 }

@@ -23,6 +23,6 @@ namespace Homemap.ApplicationCore.Interfaces.Messaging
         /// </list>
         /// </summary>
         /// <returns><c>DeviceLogDto</c> if message successfully received and decoded, otherwise <c>null</c></returns>
-        Task<DeviceLogDto?> GetDeviceLogAsync(CancellationToken cancellationToken);
+        Task<DeviceLogMessageDto?> GetDeviceLogAsync(CancellationToken cancellationToken);
     }
 }

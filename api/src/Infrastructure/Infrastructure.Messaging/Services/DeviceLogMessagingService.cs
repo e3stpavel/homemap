@@ -7,16 +7,16 @@ using Microsoft.Extensions.Options;
 
 namespace Homemap.Infrastructure.Messaging.Services
 {
-    internal class DeviceLogMessagingService : MessagingService<DeviceLogDto>, IDeviceLogMessagingService
+    internal class DeviceLogMessagingService : MessagingService<DeviceLogMessageDto>, IDeviceLogMessagingService
     {
         private readonly MessagingClient _messagingClient;
 
-        private readonly IValidator<DeviceLogDto> _validator;
+        private readonly IValidator<DeviceLogMessageDto> _validator;
 
         public DeviceLogMessagingService
         (
             MessagingClient messagingClient,
-            IValidator<DeviceLogDto> validator,
+            IValidator<DeviceLogMessageDto> validator,
             IOptions<JsonOptions> jsonOptions
         ) : base(messagingClient, jsonOptions)
         {
@@ -24,10 +24,10 @@ namespace Homemap.Infrastructure.Messaging.Services
             _validator = validator;
         }
 
-        public async Task<DeviceLogDto?> GetDeviceLogAsync(CancellationToken cancellationToken)
+        public async Task<DeviceLogMessageDto?> GetDeviceLogAsync(CancellationToken cancellationToken)
         {
             await _IsMessageReceived.WaitAsync(cancellationToken);
-            _receivedMessages.TryDequeue(out DeviceLogDto? deviceLog);
+            _receivedMessages.TryDequeue(out DeviceLogMessageDto? deviceLog);
 
             if (deviceLog is null)
                 return null;

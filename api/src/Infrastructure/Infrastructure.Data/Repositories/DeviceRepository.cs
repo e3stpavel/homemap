@@ -21,5 +21,13 @@ namespace Homemap.Infrastructure.Data.Repositories
                 .Where(e => e.ReceiverId == receiverId)
                 .ToListAsync();
         }
+
+        public async Task<IReadOnlyDictionary<int, Device>> FindAllByProjectId(int projectId)
+        {
+            return await _context.Devices
+                .Include(e => e.Receiver)
+                .Where(e => e.Receiver.ProjectId == projectId)
+                .ToDictionaryAsync(e => e.Id);
+        }
     }
 }

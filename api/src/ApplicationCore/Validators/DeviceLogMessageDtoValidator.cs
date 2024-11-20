@@ -3,9 +3,9 @@ using Homemap.ApplicationCore.Models;
 
 namespace Homemap.ApplicationCore.Validators
 {
-    public class DeviceLogDtoValidator : AbstractValidator<DeviceLogDto>
+    public class DeviceLogMessageDtoValidator : AbstractValidator<DeviceLogMessageDto>
     {
-        public DeviceLogDtoValidator()
+        public DeviceLogMessageDtoValidator()
         {
             RuleFor(log => log.Level)
                 .Must(level => new List<string>(["error", "warning", "info"]).Contains(level));

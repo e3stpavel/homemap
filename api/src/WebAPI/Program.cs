@@ -3,7 +3,7 @@ using Homemap.ApplicationCore.Interfaces.Seeders;
 using Homemap.Infrastructure.Data;
 using Homemap.Infrastructure.Data.Contexts;
 using Homemap.Infrastructure.Data.Seeds;
-using Infrastructure.Messaging;
+using Homemap.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Messaging
+namespace Homemap.Infrastructure.Messaging
 {
     public static class ServiceRegistration
     {

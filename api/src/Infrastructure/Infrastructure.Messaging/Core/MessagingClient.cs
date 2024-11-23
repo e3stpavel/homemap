@@ -6,6 +6,7 @@ using MQTTnet.Formatter;
 using MQTTnet.Packets;
 using MQTTnet.Protocol;
 using System.Buffers;
+using System.Collections.Concurrent;
 
 namespace Homemap.Infrastructure.Messaging.Core
 {
@@ -18,6 +19,8 @@ namespace Homemap.Infrastructure.Messaging.Core
         private readonly MqttClientOptions _mqttClientOptions;
 
         private readonly ILogger<MessagingClient> _logger;
+
+        private readonly ConcurrentDictionary<string, int> _subscribers = new();
 
         public event EventHandler<MessagingClientMessageReceivedEventArgs>? MessageReceived;
 
@@ -95,22 +98,32 @@ namespace Homemap.Infrastructure.Messaging.Core
 
         public async Task SubscribeAsync(string topic)
         {
-            MqttTopicFilter topicFilter = new MqttTopicFilterBuilder()
-                .WithTopic(topic)
-                .Build();
+            int subscribersCount = _subscribers.AddOrUpdate(topic, 1, (_, count) => count + 1);
 
-            MqttClientSubscribeOptions mqttSubscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter(topicFilter)
-                .Build();
+            if (subscribersCount == 1)
+            {
+                MqttTopicFilter topicFilter = new MqttTopicFilterBuilder()
+                    .WithTopic(topic)
+                    .Build();
 
-            await _mqttClient.SubscribeAsync(mqttSubscribeOptions);
-            _logger.LogInformation("Subscribed to topic ({Topic})", topic);
+                MqttClientSubscribeOptions mqttSubscribeOptions = new MqttClientSubscribeOptionsBuilder()
+                    .WithTopicFilter(topicFilter)
+                    .Build();
+
+                await _mqttClient.SubscribeAsync(mqttSubscribeOptions);
+                _logger.LogInformation("Subscribed to topic ({Topic})", topic);
+            }
         }
 
         public async Task UnsubscribeAsync(string topic)
         {
-            await _mqttClient.UnsubscribeAsync(topic);
-            _logger.LogInformation("Unsubscribed from topic ({Topic})", topic);
+            int subscribersCount = _subscribers.AddOrUpdate(topic, 0, (_, count) => count - 1);
+
+            if (subscribersCount == 0)
+            {
+                await _mqttClient.UnsubscribeAsync(topic);
+                _logger.LogInformation("Unsubscribed from topic ({Topic})", topic);
+            }
         }
 
         #region IDisplosable implementation

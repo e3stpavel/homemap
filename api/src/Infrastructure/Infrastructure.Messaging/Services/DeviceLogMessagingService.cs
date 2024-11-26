@@ -1,52 +1,38 @@
 ﻿using FluentValidation;
-using Homemap.ApplicationCore.Interfaces.Messaging;
-using Homemap.ApplicationCore.Models;
+using Homemap.ApplicationCore.Models.DeviceLogs;
 using Homemap.Infrastructure.Messaging.Core;
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Homemap.Infrastructure.Messaging.Services
 {
-    internal class DeviceLogMessagingService : MessagingService<DeviceLogMessageDto>, IDeviceLogMessagingService
+    internal class DeviceLogMessagingService : AbstractMessagingService<DeviceLogMessage>
     {
-        private readonly MessagingClient _messagingClient;
-
-        private readonly IValidator<DeviceLogMessageDto> _validator;
+        private readonly IValidator<DeviceLogMessage> _validator;
 
         public DeviceLogMessagingService
         (
+            string topic,
             MessagingClient messagingClient,
-            IValidator<DeviceLogMessageDto> validator,
-            IOptions<JsonOptions> jsonOptions
-        ) : base(messagingClient, jsonOptions)
+            JsonSerializerOptions jsonSerializerOptions,
+            IValidator<DeviceLogMessage> validator
+        ) : base(topic, messagingClient, jsonSerializerOptions)
         {
-            _messagingClient = messagingClient;
             _validator = validator;
         }
 
-        public async Task<DeviceLogMessageDto?> GetDeviceLogAsync(CancellationToken cancellationToken)
+        protected override DeviceLogMessage? OnMessageReceived(string topic, DeviceLogMessage payload)
         {
-            await _IsMessageReceived.WaitAsync(cancellationToken);
-            _receivedMessages.TryDequeue(out DeviceLogMessageDto? deviceLog);
-
-            if (deviceLog is null)
+            // extract device id from topic
+            if (!int.TryParse(topic.Split('/').ElementAt(5), out int deviceId))
                 return null;
 
-            var validationResult = _validator.Validate(deviceLog);
+            DeviceLogMessage logMessage = payload with { DeviceId = deviceId };
+
+            var validationResult = _validator.Validate(logMessage);
             if (!validationResult.IsValid)
                 return null;
 
-            return deviceLog;
-        }
-
-        public async Task ListenByProjectIdAsync(int projectId, CancellationToken cancellationToken)
-        {
-            string topic = $"logs/{projectId}/#";
-
-            await _messagingClient.SubscribeAsync(topic);
-
-            cancellationToken.Register(async () =>
-                await _messagingClient.UnsubscribeAsync(topic));
+            return logMessage;
         }
     }
 }

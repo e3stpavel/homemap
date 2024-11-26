@@ -5,7 +5,9 @@ using Homemap.ApplicationCore.Interfaces.Messaging;
 using Homemap.ApplicationCore.Interfaces.Repositories;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Models;
+using Homemap.ApplicationCore.Models.DeviceLogs;
 using Homemap.Domain.Core;
+using System.Runtime.CompilerServices;
 
 namespace Homemap.ApplicationCore.Services
 {
@@ -14,65 +16,61 @@ namespace Homemap.ApplicationCore.Services
         private readonly IMapper _mapper;
 
         private readonly ICrudRepository<Project> _projectRepository;
-        
+
         private readonly IDeviceRepository _deviceRepository;
 
-        private readonly IDeviceLogMessagingService _deviceLogMessagingService;
-
-        // TODO: consider better caching, cuz thread safety and memory considerations
-        private IReadOnlyDictionary<int, Device>? _cachedProjectDevices;
+        private readonly IMessagingServiceFactory _messagingServiceFactory;
 
         public ProjectService
         (
             IMapper mapper,
             ICrudRepository<Project> projectRepository,
             IDeviceRepository deviceRepository,
-            IDeviceLogMessagingService deviceLogMessagingService
+            IMessagingServiceFactory messagingServiceFactory
         ) : base(mapper, projectRepository)
         {
             _mapper = mapper;
             _projectRepository = projectRepository;
             _deviceRepository = deviceRepository;
-            _deviceLogMessagingService = deviceLogMessagingService;
+            _messagingServiceFactory = messagingServiceFactory;
         }
 
-        public async Task<ErrorOr<DeviceLogDto>> GetDeviceLogAsync(CancellationToken cancellationToken)
-        {
-            DeviceLogMessageDto? deviceLog = await _deviceLogMessagingService.GetDeviceLogAsync(cancellationToken);
-
-            if (deviceLog is null)
-                return ApplicationErrors.EmptyOrCorruptedMessage();
-
-            if (_cachedProjectDevices is null)
-                return ApplicationErrors.ValueNotPresent();
-
-            if (!_cachedProjectDevices.TryGetValue(deviceLog.DeviceId, out Device? device))
-                return ApplicationErrors.InappropriateMessage($"Unable to associate message with device ('{deviceLog.DeviceId}'). Device was not found.");
-
-            // TODO: change later to DeviceLog entity and then map to dto
-            DeviceDto deviceDto = _mapper.Map<DeviceDto>(device);
-
-            return new DeviceLogDto
-            {
-                Level = deviceLog.Level,
-                Message = deviceLog.Message,
-                Timestamp = deviceLog.Timestamp,
-                Device = deviceDto
-            };
-        }
-
-        public async Task<ErrorOr<Success>> ListenDeviceLogsByIdAsync(int id, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<ErrorOr<DeviceLogDto>> GetDeviceLogsByIdAsync(int id, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             Project? project = await _projectRepository.FindByIdAsync(id);
 
             if (project is null)
-                return UserErrors.EntityNotFound($"Project was not found ('{id}')");
+            {
+                yield return UserErrors.EntityNotFound($"Project was not found ('{id}')");
+                yield break;
+            }
 
-            _cachedProjectDevices = await _deviceRepository.FindAllByProjectId(project.Id);
+            IReadOnlyDictionary<int, DeviceDto> projectDeviceDtos = _mapper.Map<IReadOnlyDictionary<int, DeviceDto>>(
+                await _deviceRepository.FindAllByProjectId(id)
+            );
 
-            await _deviceLogMessagingService.ListenByProjectIdAsync(project.Id, cancellationToken);
+            using IMessagingService<DeviceLogMessage> messagingService = _messagingServiceFactory.Create<DeviceLogMessage>($"prj/{id}/rcv/+/dev/+/logs");
+            await messagingService.SubscribeAsync();
 
-            return Result.Success;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                DeviceLogMessage? logMessage = await messagingService.GetNextMessage(cancellationToken);
+                if (logMessage is null)
+                    continue;
+
+                if (!projectDeviceDtos.TryGetValue(logMessage.DeviceId, out var deviceDto))
+                    continue;
+
+                yield return new DeviceLogDto
+                {
+                    Level = logMessage.Level,
+                    Message = logMessage.Message,
+                    Timestamp = logMessage.Timestamp,
+                    Device = deviceDto
+                };
+            }
+
+            await messagingService.UnsubscribeAsync();
         }
     }
 }

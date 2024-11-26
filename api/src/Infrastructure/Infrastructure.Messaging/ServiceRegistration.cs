@@ -1,7 +1,6 @@
 ﻿using Homemap.ApplicationCore.Interfaces.Messaging;
 using Homemap.Infrastructure.Messaging.Core;
 using Homemap.Infrastructure.Messaging.Models;
-using Homemap.Infrastructure.Messaging.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,7 +24,7 @@ namespace Homemap.Infrastructure.Messaging
             services.AddHostedService(provider => provider.GetRequiredService<MessagingClient>());
 
             // inject services
-            services.AddScoped<IDeviceLogMessagingService, DeviceLogMessagingService>();
+            services.AddSingleton<IMessagingServiceFactory, MessagingServiceFactory>();
 
             return services;
         }

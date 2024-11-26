@@ -3,9 +3,9 @@ using Homemap.ApplicationCore.Models;
 
 namespace Homemap.ApplicationCore.Validators
 {
-    public class DeviceLogMessageDtoValidator : AbstractValidator<DeviceLogMessageDto>
+    public class AbstractDeviceLogDtoValidator : AbstractValidator<AbstractDeviceLogDto>
     {
-        public DeviceLogMessageDtoValidator()
+        public AbstractDeviceLogDtoValidator()
         {
             RuleFor(log => log.Level)
                 .Must(level => new List<string>(["error", "warning", "info"]).Contains(level));
@@ -15,10 +15,6 @@ namespace Homemap.ApplicationCore.Validators
 
             RuleFor(log => log.Timestamp)
                 .LessThanOrEqualTo(DateTime.UtcNow);
-
-            // probably we should not validate it here with database call
-            RuleFor(log => log.DeviceId)
-                .NotEmpty();
         }
     }
 }

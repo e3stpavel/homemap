@@ -30,7 +30,7 @@ export const useProjectService = () => {
       })
 
       watchEffect(() => {
-        const validationResult = deviceLogSchema.safeParse(JSON.parse(data.value ?? ''))
+        const validationResult = deviceLogSchema.safeParse(JSON.parse(data.value ?? 'null'))
         if (!validationResult.success)
           return
 

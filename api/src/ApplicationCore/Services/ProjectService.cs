@@ -49,12 +49,12 @@ namespace Homemap.ApplicationCore.Services
                 await _deviceRepository.FindAllByProjectIdAsync(id)
             );
 
-            using IMessagingService<DeviceLogMessage> messagingService = _messagingServiceFactory.Create<DeviceLogMessage>($"prj/{id}/rcv/+/dev/+/logs");
-            await messagingService.SubscribeAsync();
+            using var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<DeviceLogMessage>($"prj/{id}/rcv/+/dev/+/logs");
+            await subscriptionService.SubscribeAsync();
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                DeviceLogMessage? logMessage = await messagingService.GetNextMessageAsync(cancellationToken);
+                DeviceLogMessage? logMessage = await subscriptionService.GetNextMessageAsync(cancellationToken);
                 if (logMessage is null)
                     continue;
 
@@ -70,7 +70,7 @@ namespace Homemap.ApplicationCore.Services
                 };
             }
 
-            await messagingService.UnsubscribeAsync();
+            await subscriptionService.UnsubscribeAsync();
         }
     }
 }

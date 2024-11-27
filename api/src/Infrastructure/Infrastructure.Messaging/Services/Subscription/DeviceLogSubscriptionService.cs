@@ -3,13 +3,13 @@ using Homemap.ApplicationCore.Models.DeviceLogs;
 using Homemap.Infrastructure.Messaging.Core;
 using System.Text.Json;
 
-namespace Homemap.Infrastructure.Messaging.Services
+namespace Homemap.Infrastructure.Messaging.Services.Subscription
 {
-    internal class DeviceLogMessagingService : AbstractMessagingService<DeviceLogMessage>
+    internal class DeviceLogSubscriptionService : AbstractSubscriptionService<DeviceLogMessage>
     {
         private readonly IValidator<DeviceLogMessage> _validator;
 
-        public DeviceLogMessagingService
+        public DeviceLogSubscriptionService
         (
             string topic,
             MessagingClient messagingClient,

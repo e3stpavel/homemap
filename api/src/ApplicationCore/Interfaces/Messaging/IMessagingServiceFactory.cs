@@ -2,6 +2,8 @@
 {
     public interface IMessagingServiceFactory
     {
-        IMessagingService<T> Create<T>(string topic);
+        ISubscriptionService<T> CreateSubscriptionService<T>(string topic);
+
+        IPublishingService<T> CreatePublishingService<T>(string topic);
     }
 }

@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using Homemap.ApplicationCore.Interfaces.Messaging;
+using Homemap.ApplicationCore.Models;
 using Homemap.ApplicationCore.Models.DeviceLogs;
-using Homemap.Infrastructure.Messaging.Services;
+using Homemap.Infrastructure.Messaging.Services.Publishing;
+using Homemap.Infrastructure.Messaging.Services.Subscription;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -29,19 +31,35 @@ namespace Homemap.Infrastructure.Messaging.Core
             _jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
         }
 
-        public IMessagingService<T> Create<T>(string topic)
+        public IPublishingService<T> CreatePublishingService<T>(string topic)
+        {
+            return typeof(T) switch
+            {
+                Type type when type == typeof(DeviceStateDto) =>
+                    (IPublishingService<T>)new DeviceStatePublishingService(
+                        topic,
+                        _messagingClient,
+                        _jsonSerializerOptions
+                    ),
+
+                _ => throw new NotImplementedException()
+            };
+        }
+
+        public ISubscriptionService<T> CreateSubscriptionService<T>(string topic)
         {
             using var scope = _scopeFactory.CreateScope();
 
             return typeof(T) switch
             {
                 Type type when type == typeof(DeviceLogMessage) =>
-                    (IMessagingService<T>)new DeviceLogMessagingService(
+                    (ISubscriptionService<T>)new DeviceLogSubscriptionService(
                         topic,
                         _messagingClient,
                         _jsonSerializerOptions,
                         scope.ServiceProvider.GetRequiredService<IValidator<DeviceLogMessage>>()
                     ),
+
                 _ => throw new NotImplementedException()
             };
         }

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Homemap.Infrastructure.Messaging.Core
 {
-    internal abstract class AbstractMessagingService<T> : IMessagingService<T>
+    internal abstract class AbstractSubscriptionService<T> : ISubscriptionService<T>
     {
         private bool _isDisposed;
 
@@ -24,7 +24,7 @@ namespace Homemap.Infrastructure.Messaging.Core
 
         protected abstract T? OnMessageReceived(string topic, T payload);
 
-        public AbstractMessagingService(string topic, MessagingClient messagingClient, JsonSerializerOptions jsonSerializerOptions)
+        public AbstractSubscriptionService(string topic, MessagingClient messagingClient, JsonSerializerOptions jsonSerializerOptions)
         {
             _topic = topic;
             _topicPattern = _topic.Replace("+", "[^/]").Replace("#", ".*"); // TODO: test it
@@ -68,11 +68,6 @@ namespace Homemap.Infrastructure.Messaging.Core
             return message;
         }
 
-        public Task PublishAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task SubscribeAsync()
         {
             await _messagingClient.SubscribeAsync(_topic);
@@ -99,7 +94,7 @@ namespace Homemap.Infrastructure.Messaging.Core
             }
         }
 
-        ~AbstractMessagingService() => Dispose(false);
+        ~AbstractSubscriptionService() => Dispose(false);
 
         public void Dispose()
         {

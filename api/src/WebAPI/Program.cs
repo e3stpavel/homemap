@@ -12,7 +12,7 @@ const string devCorsPolicy = "devNuxtCorsPolicy";
 builder.Services
     .AddDatabase(builder.Configuration)
     .AddRepositories()
-    .AddMessagingService(builder.Configuration)
+    .AddMessagingServices(builder.Configuration)
     .AddMappers()
     .AddValidators()
     .AddApplicationServices()

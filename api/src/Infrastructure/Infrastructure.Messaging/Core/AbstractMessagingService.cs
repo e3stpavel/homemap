@@ -36,7 +36,7 @@ namespace Homemap.Infrastructure.Messaging.Core
 
         private void MessagingClient_MessageReceived(object? sender, MessagingClientMessageReceivedEventArgs args)
         {
-            if (!Regex.IsMatch(_topic, _topicPattern))
+            if (!Regex.IsMatch(args.Topic, _topicPattern))
                 return;
 
             T? payload = JsonSerializer.Deserialize<T>(args.Payload, _jsonSerializerOptions);
@@ -52,8 +52,7 @@ namespace Homemap.Infrastructure.Messaging.Core
             }
         }
 
-        // TODO: think about nullable here, kinda don't want to check if null everywhere
-        public async Task<T?> GetNextMessage(CancellationToken cancellationToken)
+        public async Task<T?> GetNextMessageAsync(CancellationToken cancellationToken)
         {
             try
             {

@@ -6,7 +6,7 @@
 
         Task UnsubscribeAsync();
 
-        Task<T?> GetNextMessage(CancellationToken cancellationToken = default);
+        Task<T?> GetNextMessageAsync(CancellationToken cancellationToken = default);
 
         // TODO: think of API
         Task PublishAsync();

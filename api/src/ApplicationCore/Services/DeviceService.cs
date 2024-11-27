@@ -36,7 +36,7 @@ namespace Homemap.ApplicationCore.Services
                 return UserErrors.EntityNotFound($"Receiver was not found ('{receiverId}')");
             }
 
-            IReadOnlyList<Device> devices = await _deviceRepository.FindAllByReceiverId(receiverId);
+            IReadOnlyList<Device> devices = await _deviceRepository.FindAllByReceiverIdAsync(receiverId);
             return _mapper.Map<IReadOnlyList<DeviceDto>>(devices).ToErrorOr();
         }
 

@@ -46,7 +46,7 @@ namespace Homemap.ApplicationCore.Services
             }
 
             IReadOnlyDictionary<int, DeviceDto> projectDeviceDtos = _mapper.Map<IReadOnlyDictionary<int, DeviceDto>>(
-                await _deviceRepository.FindAllByProjectId(id)
+                await _deviceRepository.FindAllByProjectIdAsync(id)
             );
 
             using IMessagingService<DeviceLogMessage> messagingService = _messagingServiceFactory.Create<DeviceLogMessage>($"prj/{id}/rcv/+/dev/+/logs");
@@ -54,7 +54,7 @@ namespace Homemap.ApplicationCore.Services
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                DeviceLogMessage? logMessage = await messagingService.GetNextMessage(cancellationToken);
+                DeviceLogMessage? logMessage = await messagingService.GetNextMessageAsync(cancellationToken);
                 if (logMessage is null)
                     continue;
 

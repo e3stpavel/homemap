@@ -8,7 +8,7 @@ namespace Homemap.Infrastructure.Messaging
 {
     public static class ServiceRegistration
     {
-        public static IServiceCollection AddMessagingService(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddMessagingServices(this IServiceCollection services, IConfiguration configuration)
         {
             // configure connection options
             string connectionString = configuration.GetConnectionString("MqttDefaultConnection")

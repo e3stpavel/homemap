@@ -11,10 +11,10 @@ namespace Homemap.ApplicationCore.Errors
                 description);
         }
 
-        public static Error InappropriateMessage(string description)
+        public static Error NotImplemented(string description = "Functionality is not implemented")
         {
-            return Error.Validation(
-                code: $"{nameof(ApplicationErrors)}.{nameof(InappropriateMessage)}",
+            return Error.Unexpected(
+                code: $"{nameof(ApplicationErrors)}.{nameof(NotImplemented)}",
                 description);
         }
 

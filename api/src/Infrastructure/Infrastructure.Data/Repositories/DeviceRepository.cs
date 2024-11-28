@@ -15,6 +15,13 @@ namespace Homemap.Infrastructure.Data.Repositories
             _context = context;
         }
 
+        public async new Task<Device?> FindByIdAsync(int id)
+        {
+            return await _context.Devices
+                .Include(e => e.Receiver)
+                .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
         public async Task<IReadOnlyList<Device>> FindAllByReceiverIdAsync(int receiverId)
         {
             return await _context.Devices

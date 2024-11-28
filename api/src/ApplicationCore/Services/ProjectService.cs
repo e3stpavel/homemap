@@ -49,7 +49,8 @@ namespace Homemap.ApplicationCore.Services
                 await _deviceRepository.FindAllByProjectIdAsync(id)
             );
 
-            using var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<DeviceLogMessage>($"prj/{id}/rcv/+/dev/+/logs");
+            string topic = $"prj/{id}/rcv/+/dev/+/logs";
+            using var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<DeviceLogMessage>(topic);
             await subscriptionService.SubscribeAsync();
 
             while (!cancellationToken.IsCancellationRequested)

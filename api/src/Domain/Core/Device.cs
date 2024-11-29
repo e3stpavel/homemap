@@ -15,11 +15,8 @@ namespace Homemap.Domain.Core
         [Required]
         public virtual Receiver Receiver { get; set; } = null!;
 
-        [NotMapped]
-        public DeviceState? State { get; set; }
-
         // and after that you tell me that c# is great...
-        public Type GetDomainType()
+        public Type GetDeviceType()
         {
             Type deviceType = GetType();
             if (deviceType.Namespace == "Castle.Proxies" || deviceType.Namespace == "System.Data.Entity.DynamicProxies")

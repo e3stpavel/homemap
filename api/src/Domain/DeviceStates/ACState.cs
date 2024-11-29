@@ -9,7 +9,7 @@ namespace Homemap.Domain.DeviceStates
 
         public override bool IsAssignableTo(Device device)
         {
-            if (device.GetDomainType() == typeof(ACDevice))
+            if (device.GetDeviceType() == typeof(ACDevice))
                 return true;
 
             return false;

@@ -11,7 +11,7 @@ namespace Homemap.Domain.DeviceStates
 
         public override bool IsAssignableTo(Device device)
         {
-            if (device.GetDomainType() == typeof(LightbulbDevice))
+            if (device.GetDeviceType() == typeof(LightbulbDevice))
                 return true;
 
             return false;

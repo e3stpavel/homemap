@@ -88,7 +88,7 @@ namespace Homemap.ApplicationCore.Services
                 return ApplicationErrors.EmptyOrCorruptedMessage();
 
             // TODO: this is not scallable and can be prettier, but I am tired of stupid c# types behaviour
-            DeviceState? state = device.GetDomainType() switch
+            DeviceState? state = device.GetDeviceType() switch
             {
                 Type type when type == typeof(ACDevice) => _mapper.Map<ACState>(stateMessage),
                 Type type when type == typeof(ThermostatDevice) => _mapper.Map<ThermostatState>(stateMessage),

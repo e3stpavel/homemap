@@ -9,7 +9,7 @@ namespace Homemap.Domain.DeviceStates
 
         public override bool IsAssignableTo(Device device)
         {
-            if (device.GetDomainType() == typeof(ThermostatDevice))
+            if (device.GetDeviceType() == typeof(ThermostatDevice))
                 return true;
 
             return false;

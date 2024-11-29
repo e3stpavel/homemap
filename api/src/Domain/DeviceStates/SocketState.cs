@@ -7,7 +7,7 @@ namespace Homemap.Domain.DeviceStates
     {
         public override bool IsAssignableTo(Device device)
         {
-            if (device.GetDomainType() == typeof(SocketDevice))
+            if (device.GetDeviceType() == typeof(SocketDevice))
                 return true;
 
             return false;

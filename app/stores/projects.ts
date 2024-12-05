@@ -32,20 +32,16 @@ export const useProjectsStore = defineStore('projects', () => {
     return currentProject.value
   }
 
-  const deviceLogs = ref<DeviceLog[]>([])
+  const deviceLogs = reactive<DeviceLog[]>([])
 
-  function streamDeviceLogs() {
+  async function streamDeviceLogs(signal: AbortSignal) {
     if (!currentProjectId.value)
       return
 
-    const { deviceLog, startStreaming, stopStreaming } = projectService.streamDeviceLogsById(currentProjectId.value)
-
-    watchEffect(() => {
-      if (deviceLog.value)
-        deviceLogs.value.push(deviceLog.value)
-    })
-
-    return { startStreaming, stopStreaming }
+    const logs = projectService.streamDeviceLogsById(currentProjectId.value, signal)
+    for await (const log of logs) {
+      deviceLogs.unshift(log)
+    }
   }
 
   async function removeProject(projectId: Project['id']) {

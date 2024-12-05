@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { deviceLogSchema, type DeviceLog } from '~/domain/device-log'
+import { deviceLogSchema } from '~/domain/device-log'
 import { updateProjectSchema, projectSchema, type Project, createProjectSchema } from '~/domain/project'
 
 export const useProjectService = () => {
@@ -23,21 +23,17 @@ export const useProjectService = () => {
       return projectSchema.parse(response)
     },
 
-    streamDeviceLogsById(id: Project['id']) {
-      const deviceLog = ref<DeviceLog>()
-      const { data, open, close } = useEventSource(`${baseUrl}/${id}/logs/stream`, [], {
-        immediate: false,
+    async *streamDeviceLogsById(id: Project['id'], signal: AbortSignal) {
+      const eventStream = createEventStream(`${baseUrl}/${id}/logs/stream`, {
+        signal,
       })
 
-      watchEffect(() => {
-        const validationResult = deviceLogSchema.safeParse(JSON.parse(data.value ?? 'null'))
-        if (!validationResult.success)
-          return
+      for await (const event of eventStream) {
+        const validationResult = deviceLogSchema.safeParse(event.data)
 
-        deviceLog.value = validationResult.data
-      })
-
-      return { deviceLog, startStreaming: open, stopStreaming: close }
+        if (validationResult.success)
+          yield deviceLogSchema.parse(event.data)
+      }
     },
 
     async removeProjectById(id: Project['id']) {

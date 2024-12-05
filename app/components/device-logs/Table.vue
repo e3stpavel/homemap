@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import type { DeviceLog } from '~/domain/device-log'
+const abortController = new AbortController()
+
+// abort when user exits the page
+onBeforeUnmount(() => abortController.abort())
+
+const projectStore = useProjectsStore()
+projectStore.streamDeviceLogs(abortController.signal)
 
 const dtf = new Intl.DateTimeFormat('en', {
   timeStyle: 'medium',
@@ -7,50 +13,15 @@ const dtf = new Intl.DateTimeFormat('en', {
   hour12: false,
 })
 
-const deviceLogs = ref<DeviceLog[]>(Array.from({ length: 100 }).map((_, i) => ({
-  level: 'warning',
-  message: i % 2 === 0 ? 'hello lorem ekeepo jekepep jeowpwp mwlw wl' : 'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eveniet debitis porro et voluptatum officiis quia accusantium, dolore eaque delectus deserunt animi enim eligendi aut beatae sit laboriosam, rem incidunt. Sint placeat necessitatibus ratione sit, nemo aut. Adipisci minima, consectetur blanditiis corporis cum eum doloremque reiciendis sed quidem suscipit. Rerum ut optio, cum corporis veniam blanditiis porro modi accusamus, asperiores deserunt eum quibusdam id nulla! Itaque, esse. Ut saepe necessitatibus at accusamus earum incidunt dolore dolorum consectetur delectus quam explicabo autem error nesciunt repudiandae dolores, architecto illo repellat labore suscipit sed. Possimus dignissimos quisquam eligendi repudiandae at necessitatibus consequatur facilis quas!',
-  timestamp: new Date(1733223648563),
-  device: {
-    id: 1,
-    name: 'testing',
-    $type: 'lightbulb',
-    createdAt: new Date(1733223648563),
-    lastModifiedAt: new Date(1733223648563),
-  },
-})))
-
-const { list, containerProps, wrapperProps } = useVirtualList(deviceLogs, {
+// TODO: preserve position when neẇ items added
+const { list, containerProps, wrapperProps } = useVirtualList(projectStore.deviceLogs, {
   itemHeight: 40,
 })
-
-// testing
-// const size = 40
-// const listRef = useTemplateRef('list')
-
-// const rowVirtualizer = useWindowVirtualizer({
-//   count: 10_000,
-//   estimateSize: () => size,
-//   overscan: 5,
-//   getItemKey: (i) => {
-//     const log = deviceLogs.at(i)
-//     return `${i}-${log?.level}-${log?.device.id}-${log?.timestamp}`
-//   },
-
-//   scrollMargin: listRef.value?.offsetTop ?? 0,
-//   paddingEnd: size,
-
-//   // hydration is hard
-//   initialRect: { width: 0, height: 720 },
-// })
-
-// const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems())
-// const totalSize = computed(() => rowVirtualizer.value.getTotalSize())
 </script>
 
 <template>
   <div
-    class="h-screen-md overflow-auto whitespace-nowrap -mx-6"
+    class="h-screen-sm overflow-auto whitespace-nowrap -mx-6"
     v-bind="containerProps"
   >
     <div class="inline-block min-w-full sm:px-6">

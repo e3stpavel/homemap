@@ -29,10 +29,10 @@ export const useProjectService = () => {
       })
 
       for await (const event of eventStream) {
-        const validationResult = deviceLogSchema.safeParse(event.data)
+        const validationResult = deviceLogSchema.safeParse(event.message)
 
         if (validationResult.success)
-          yield deviceLogSchema.parse(event.data)
+          yield validationResult.data
       }
     },
 

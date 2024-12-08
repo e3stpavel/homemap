@@ -74,18 +74,11 @@ namespace Homemap.ApplicationCore.Services
                 return UserErrors.EntityNotFound($"Device was not found ('{id}')");
 
             // assume that device has published the initial state message with retain flag
-            StateMessageDto? stateMessage;
             string topic = $"prj/{device.Receiver.ProjectId}/rcv/{device.ReceiverId}/dev/{id}/state";
+            var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<StateMessageDto>(topic);
+            var stream = subscriptionService.StreamAsync(cancellationToken);
 
-            using (var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<StateMessageDto>(topic))
-            {
-                await subscriptionService.SubscribeAsync();
-                stateMessage = await subscriptionService.GetNextMessageAsync(cancellationToken);
-                await subscriptionService.UnsubscribeAsync();
-            }
-
-            if (stateMessage is null)
-                return ApplicationErrors.EmptyOrCorruptedMessage();
+            StateMessageDto stateMessage = await stream.FirstAsync(cancellationToken);
 
             // TODO: this is not scallable and can be prettier, but I am tired of stupid c# types behaviour
             DeviceState? state = device.GetDeviceType() switch

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Homemap.Infrastructure.Messaging.Services.Subscription
 {
-    internal class DeviceLogSubscriptionService : AbstractSubscriptionService<LogMessageDto>
+    internal class DeviceLogSubscriptionService : SubscriptionService<LogMessageDto>
     {
         private readonly IValidator<LogMessageDto> _validator;
 
@@ -20,19 +20,23 @@ namespace Homemap.Infrastructure.Messaging.Services.Subscription
             _validator = validator;
         }
 
-        protected override LogMessageDto? OnMessageReceived(string topic, LogMessageDto payload)
+        protected override LogMessageDto? DeserializeMessage(string topic, byte[] payload)
         {
+            var rawMessage = base.DeserializeMessage(topic, payload);
+            if (rawMessage is null)
+                return null;
+
             // extract device id from topic
             if (!int.TryParse(topic.Split('/').ElementAt(5), out int deviceId))
                 return null;
 
-            LogMessageDto logMessage = payload with { DeviceId = deviceId };
+            LogMessageDto message = rawMessage with { DeviceId = deviceId };
 
-            var validationResult = _validator.Validate(logMessage);
+            var validationResult = _validator.Validate(message);
             if (!validationResult.IsValid)
                 return null;
 
-            return logMessage;
+            return message;
         }
     }
 }

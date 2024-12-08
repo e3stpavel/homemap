@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Homemap.Infrastructure.Messaging.Services.Subscription
 {
-    internal class DeviceStateSubscriptionService : AbstractSubscriptionService<StateMessageDto>
+    internal class DeviceStateSubscriptionService : SubscriptionService<StateMessageDto>
     {
         private readonly IValidator<StateMessageDto> _validator;
 
@@ -20,13 +20,17 @@ namespace Homemap.Infrastructure.Messaging.Services.Subscription
             _validator = validator;
         }
 
-        protected override StateMessageDto? OnMessageReceived(string topic, StateMessageDto payload)
+        protected override StateMessageDto? DeserializeMessage(string topic, byte[] payload)
         {
-            var validationResult = _validator.Validate(payload);
+            var message = base.DeserializeMessage(topic, payload);
+            if (message is null)
+                return null;
+
+            var validationResult = _validator.Validate(message);
             if (!validationResult.IsValid)
                 return null;
 
-            return payload;
+            return message;
         }
     }
 }

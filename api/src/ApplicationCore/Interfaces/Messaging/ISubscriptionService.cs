@@ -1,11 +1,7 @@
 ﻿namespace Homemap.ApplicationCore.Interfaces.Messaging
 {
-    public interface ISubscriptionService<T> : IDisposable
+    public interface ISubscriptionService<T>
     {
-        Task SubscribeAsync();
-
-        Task UnsubscribeAsync();
-
-        Task<T?> GetNextMessageAsync(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<T> StreamAsync(CancellationToken cancellationToken = default);
     }
 }

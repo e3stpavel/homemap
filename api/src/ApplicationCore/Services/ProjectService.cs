@@ -50,15 +50,11 @@ namespace Homemap.ApplicationCore.Services
             );
 
             string topic = $"prj/{id}/rcv/+/dev/+/logs";
-            using var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<LogMessageDto>(topic);
-            await subscriptionService.SubscribeAsync();
+            var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<LogMessageDto>(topic);
+            var stream = subscriptionService.StreamAsync(cancellationToken);
 
-            while (!cancellationToken.IsCancellationRequested)
+            await foreach (var logMessage in stream)
             {
-                LogMessageDto? logMessage = await subscriptionService.GetNextMessageAsync(cancellationToken);
-                if (logMessage is null)
-                    continue;
-
                 if (!projectDeviceDtos.TryGetValue(logMessage.DeviceId, out var deviceDto))
                     continue;
 
@@ -70,8 +66,6 @@ namespace Homemap.ApplicationCore.Services
                     Device = deviceDto
                 };
             }
-
-            await subscriptionService.UnsubscribeAsync();
         }
     }
 }

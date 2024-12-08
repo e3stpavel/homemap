@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Homemap.Infrastructure.Messaging.Services.Publishing
 {
-    internal class DeviceStatePublishingService : AbstractPublishingService<StateMessageDto>
+    internal class DeviceStatePublishingService : PublishingService<StateMessageDto>
     {
         public DeviceStatePublishingService
         (
@@ -25,12 +25,12 @@ namespace Homemap.Infrastructure.Messaging.Services.Publishing
             };
         }
 
-        protected override MessagingClientPublishAsyncOptions ConfigureMessageOptions()
+        public override Task PublishAsync(StateMessageDto message)
         {
-            return new MessagingClientPublishAsyncOptions()
+            return PublishAsync(message, new MessagingClientPublishAsyncOptions()
             {
                 QoS = MessagingClientPublishAsyncOptions.QualityOfService.EXACTLY_ONCE,
-            };
+            });
         }
     }
 }

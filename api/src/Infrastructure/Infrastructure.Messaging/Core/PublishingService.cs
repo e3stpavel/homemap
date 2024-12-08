@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Homemap.Infrastructure.Messaging.Core
 {
-    internal abstract class AbstractPublishingService<T> : IPublishingService<T>
+    internal abstract class PublishingService<T> : IPublishingService<T>
     {
         private readonly string _topic;
 
@@ -12,21 +12,24 @@ namespace Homemap.Infrastructure.Messaging.Core
 
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        protected abstract MessagingClientPublishAsyncOptions ConfigureMessageOptions();
-
-        public AbstractPublishingService(string topic, MessagingClient messagingClient, JsonSerializerOptions jsonSerializerOptions)
+        public PublishingService(string topic, MessagingClient messagingClient, JsonSerializerOptions jsonSerializerOptions)
         {
             _topic = topic;
             _messagingClient = messagingClient;
             _jsonSerializerOptions = jsonSerializerOptions;
         }
 
-        public async Task PublishAsync(T message)
+        protected async Task PublishAsync(T message, MessagingClientPublishAsyncOptions options)
         {
             byte[] payload = JsonSerializer.SerializeToUtf8Bytes(message, _jsonSerializerOptions);
-            var options = ConfigureMessageOptions();
 
             await _messagingClient.PublishAsync(_topic, payload, options);
+        }
+
+        public virtual async Task PublishAsync(T message)
+        {
+            var defaultOptions = new MessagingClientPublishAsyncOptions();
+            await PublishAsync(message, defaultOptions);
         }
     }
 }

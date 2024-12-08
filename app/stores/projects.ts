@@ -1,5 +1,6 @@
 // https://github.com/nuxt/nuxt/issues/28804
 import { useRoute } from 'vue-router'
+import type { DeviceLog } from '~/domain/device-log'
 import type { Project } from '~/domain/project'
 import { useProjectService } from '~/services/project'
 
@@ -29,6 +30,18 @@ export const useProjectsStore = defineStore('projects', () => {
 
     currentProject.value = await projectService.getProjectById(currentProjectId.value)
     return currentProject.value
+  }
+
+  const deviceLogs = reactive<DeviceLog[]>([])
+
+  async function streamDeviceLogs(signal: AbortSignal) {
+    if (!currentProjectId.value)
+      return
+
+    const logs = projectService.streamDeviceLogsById(currentProjectId.value, signal)
+    for await (const log of logs) {
+      deviceLogs.unshift(log)
+    }
   }
 
   async function removeProject(projectId: Project['id']) {
@@ -61,5 +74,7 @@ export const useProjectsStore = defineStore('projects', () => {
     currentProjectId,
     getCurrentProject,
     removeProject,
+    deviceLogs,
+    streamDeviceLogs,
   }
 })

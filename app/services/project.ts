@@ -1,11 +1,14 @@
 import { z } from 'zod'
+import { deviceLogSchema } from '~/domain/device-log'
 import { updateProjectSchema, projectSchema, type Project, createProjectSchema } from '~/domain/project'
 
 export const useProjectService = () => {
   const config = useRuntimeConfig()
+  const baseUrl = `${config.public.apiBaseUrl}/projects`
+
   const repository = createProjectRepository(
     $fetch.create({
-      baseURL: `${config.public.apiBaseUrl}/projects`,
+      baseURL: baseUrl,
     }),
   )
 
@@ -18,6 +21,19 @@ export const useProjectService = () => {
     async getProjectById(id: Project['id']) {
       const response = await repository.findOne(id)
       return projectSchema.parse(response)
+    },
+
+    async *streamDeviceLogsById(id: Project['id'], signal: AbortSignal) {
+      const eventStream = createEventStream(`${baseUrl}/${id}/logs/stream`, {
+        signal,
+      })
+
+      for await (const event of eventStream) {
+        const validationResult = deviceLogSchema.safeParse(event.message)
+
+        if (validationResult.success)
+          yield validationResult.data
+      }
     },
 
     async removeProjectById(id: Project['id']) {

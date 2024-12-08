@@ -1,7 +1,6 @@
 using FluentValidation;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Mappings;
-using Homemap.ApplicationCore.Models;
 using Homemap.ApplicationCore.Services;
 using Homemap.ApplicationCore.Validators;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +25,7 @@ namespace Homemap.ApplicationCore
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            services.AddScoped<IService<ProjectDto>, ProjectService>();
+            services.AddScoped<IProjectService, ProjectService>();
             services.AddScoped<IReceiverService, ReceiverService>();
             services.AddScoped<IDeviceService, DeviceService>();
 

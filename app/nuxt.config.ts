@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     'radix-vue/nuxt',
     '@pinia/nuxt',
+    '@vueuse/nuxt',
   ],
 
   // https://nuxt.com/docs/guide/going-further/runtime-config

@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using ErrorOr;
 using Homemap.ApplicationCore.Errors;
+using Homemap.ApplicationCore.Interfaces.Messaging;
 using Homemap.ApplicationCore.Interfaces.Repositories;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Models;
 using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.Domain.Core;
+using Homemap.Domain.Devices;
+using Homemap.Domain.DeviceStates;
 
 namespace Homemap.ApplicationCore.Services
 {
@@ -17,19 +20,19 @@ namespace Homemap.ApplicationCore.Services
 
         private readonly ICrudRepository<Receiver> _receiverRepository;
 
-        private readonly IMessagingService<DeviceStateDto> _messagingService;
+        private readonly IMessagingServiceFactory _messagingServiceFactory;
 
         public DeviceService(
             IMapper mapper,
             IDeviceRepository deviceRepository,
             ICrudRepository<Receiver> receiverRepository,
-            IMessagingService<DeviceStateDto> messagingService
+            IMessagingServiceFactory messagingServiceFactory
         ) : base(mapper, deviceRepository)
         {
             _deviceRepository = deviceRepository;
             _receiverRepository = receiverRepository;
             _mapper = mapper;
-            _messagingService = messagingService;
+            _messagingServiceFactory = messagingServiceFactory;
         }
 
         public async Task<ErrorOr<IReadOnlyList<DeviceDto>>> GetAllAsync(int receiverId)
@@ -41,7 +44,7 @@ namespace Homemap.ApplicationCore.Services
                 return UserErrors.EntityNotFound($"Receiver was not found ('{receiverId}')");
             }
 
-            IReadOnlyList<Device> devices = await _deviceRepository.FindAllByReceiverId(receiverId);
+            IReadOnlyList<Device> devices = await _deviceRepository.FindAllByReceiverIdAsync(receiverId);
             return _mapper.Map<IReadOnlyList<DeviceDto>>(devices).ToErrorOr();
         }
 
@@ -63,55 +66,54 @@ namespace Homemap.ApplicationCore.Services
             return _mapper.Map<DeviceDto>(deviceEntity);
         }
 
-        public async Task<ErrorOr<Updated>> SetStateAsync(int deviceId, DeviceStateDto deviceStateDto)
+        public async Task<ErrorOr<DeviceStateDto>> GetDeviceStateByIdAsync(int id, CancellationToken cancellationToken)
         {
-            Device? device = await _deviceRepository.FindByIdAsync(deviceId);
+            Device? device = await _deviceRepository.FindByIdIncludingReceiverAsync(id);
 
             if (device is null)
-                return UserErrors.EntityNotFound($"Device was not found ('{deviceId}')");
+                return UserErrors.EntityNotFound($"Device was not found ('{id}')");
 
-            // TODO: perform validation that state can be used for this device
-            //  must be performed on domain level as it is domain specific logic
+            // assume that device has published the initial state message with retain flag
+            string topic = $"prj/{device.Receiver.ProjectId}/rcv/{device.ReceiverId}/dev/{id}/state";
+            var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<StateMessageDto>(topic);
+            var stream = subscriptionService.StreamAsync(cancellationToken);
 
-            await _messagingService.PublishAsync(
-                $"devices/{deviceId}/set-state",
-                deviceStateDto,
-                new MessagingServicePublishOptions
-                {
-                    QualityOfService = MessagingQualityOfService.EXACTLT_ONCE
-                }
-            );
+            StateMessageDto stateMessage = await stream.FirstAsync(cancellationToken);
 
-            return Result.Updated;
+            // TODO: this is not scallable and can be prettier, but I am tired of stupid c# types behaviour
+            DeviceState? state = device.GetDeviceType() switch
+            {
+                Type type when type == typeof(ACDevice) => _mapper.Map<ACState>(stateMessage),
+                Type type when type == typeof(ThermostatDevice) => _mapper.Map<ThermostatState>(stateMessage),
+                Type type when type == typeof(SocketDevice) => _mapper.Map<SocketState>(stateMessage),
+                Type type when type == typeof(LightbulbDevice) => _mapper.Map<LightbulbState>(stateMessage),
+                _ => default
+            };
+
+            if (state is null)
+                return ApplicationErrors.NotImplemented();
+
+            return _mapper.Map<DeviceStateDto>(state);
         }
 
-        public async Task<ErrorOr<DeviceStateDto>> GetStateAsync(int deviceId)
+        public async Task<ErrorOr<Updated>> SetDeviceStateByIdAsync(int id, DeviceStateDto stateDto)
         {
-            Device? device = await _deviceRepository.FindByIdAsync(deviceId);
+            Device? device = await _deviceRepository.FindByIdIncludingReceiverAsync(id);
 
             if (device is null)
-                return UserErrors.EntityNotFound($"Device was not found ('{deviceId}')");
+                return UserErrors.EntityNotFound($"Device was not found ('{id}')");
 
-            // assume that device has published the initial state message
-            await _messagingService.SubscribeAsync($"devices/{deviceId}/state");
+            DeviceState state = _mapper.Map<DeviceState>(stateDto);
+            if (!state.IsAssignableTo(device))
+                return UserErrors.IllegalOperation("Device state is not assignable to this device");
 
-            var tcs = new TaskCompletionSource<DeviceStateDto>();
+            string topic = $"prj/{device.Receiver.ProjectId}/rcv/{device.ReceiverId}/dev/{id}/set-state";
+            var publishingService = _messagingServiceFactory.CreatePublishingService<StateMessageDto>(topic);
 
-            while (true)
-            {
-                if (_messagingService.ReceivedMessages.TryDequeue(out var deviceState))
-                {
-                    if (deviceState is not null)
-                    {
-                        // TODO: validate device state from broker as well
+            StateMessageDto stateMessage = _mapper.Map<StateMessageDto>(state);
+            await publishingService.PublishAsync(stateMessage);
 
-                        tcs.SetResult(deviceState);
-                        break;
-                    }
-                }
-            }
-
-            return await tcs.Task;
+            return Result.Updated;
         }
     }
 }

@@ -6,23 +6,23 @@ namespace Homemap.ApplicationCore.Validators
 {
     public class DeviceStateDtoValidator : AbstractValidator<DeviceStateDto>
     {
-        public DeviceStateDtoValidator(
-            ACDeviceStateDtoValidator acDeviceStateValidator,
-            ThermostatDeviceStateDtoValidator thermostatDeviceStateValidator,
-            LightbulbDeviceStateDtoValidator lightbulbDeviceStateValidator
+        public DeviceStateDtoValidator
+        (
+            ACStateDtoValidator acStateDtoValidator,
+            ThermostatStateDtoValidator thermostatStateDtoValidator,
+            LightbulbStateDtoValidator lightbulbStateDtoValidator
         )
         {
             RuleFor(x => x)
-                .SetInheritanceValidator(v =>
-                {
-                    v.Add(acDeviceStateValidator);
-                    v.Add(thermostatDeviceStateValidator);
-                    v.Add(lightbulbDeviceStateValidator);
-                });
+               .SetInheritanceValidator(v =>
+               {
+                   v.Add(acStateDtoValidator);
+                   v.Add(thermostatStateDtoValidator);
+                   v.Add(lightbulbStateDtoValidator);
+               });
 
             RuleFor(x => x.IsTurnedOn)
-                .NotNull();
+                .Must(x => x == false || x == true);
         }
-
     }
 }

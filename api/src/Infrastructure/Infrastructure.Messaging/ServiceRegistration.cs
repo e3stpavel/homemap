@@ -1,22 +1,30 @@
-﻿using Homemap.ApplicationCore.Interfaces.Services;
-using Infrastructure.Messaging.Models;
-using Infrastructure.Messaging.Services;
+﻿using Homemap.ApplicationCore.Interfaces.Messaging;
+using Homemap.Infrastructure.Messaging.Core;
+using Homemap.Infrastructure.Messaging.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Messaging
+namespace Homemap.Infrastructure.Messaging
 {
     public static class ServiceRegistration
     {
-        public static IServiceCollection AddMessagingService(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddMessagingServices(this IServiceCollection services, IConfiguration configuration)
         {
-            string connectionString = configuration.GetConnectionString("MqttDefaultConnection") ?? throw new InvalidOperationException("Connection string not found (message queue)");
+            // configure connection options
+            string connectionString = configuration.GetConnectionString("MqttDefaultConnection")
+                ?? throw new InvalidOperationException("Connection string not found (message queue)");
 
-            services.AddSingleton(_ => new MessagingServiceOptions
+            services.AddSingleton(_ => new MessagingClientOptions
             {
-                ConnectionUri = connectionString
+                ConnectionUri = connectionString,
             });
-            services.AddSingleton(typeof(IMessagingService<>), typeof(MessagingService<>));
+
+            // inject client and run it on the background
+            services.AddSingleton<MessagingClient>();
+            services.AddHostedService(provider => provider.GetRequiredService<MessagingClient>());
+
+            // inject services
+            services.AddSingleton<IMessagingServiceFactory, MessagingServiceFactory>();
 
             return services;
         }

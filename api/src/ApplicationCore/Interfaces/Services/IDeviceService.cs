@@ -1,6 +1,5 @@
 ﻿using ErrorOr;
 using Homemap.ApplicationCore.Models;
-using System.Collections.Concurrent;
 
 namespace Homemap.ApplicationCore.Interfaces.Services
 {
@@ -10,8 +9,8 @@ namespace Homemap.ApplicationCore.Interfaces.Services
 
         Task<ErrorOr<DeviceDto>> CreateAsync(int receiverId, DeviceDto dto);
 
-        Task<ErrorOr<DeviceStateDto>> GetStateAsync(int deviceId);
+        Task<ErrorOr<DeviceStateDto>> GetDeviceStateByIdAsync(int id, CancellationToken cancellationToken);
 
-        Task<ErrorOr<Updated>> SetStateAsync(int deviceId, DeviceStateDto deviceStateDto);
+        Task<ErrorOr<Updated>> SetDeviceStateByIdAsync(int id, DeviceStateDto state);
     }
 }

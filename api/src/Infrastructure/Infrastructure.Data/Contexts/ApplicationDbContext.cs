@@ -9,11 +9,11 @@ namespace Homemap.Infrastructure.Data.Contexts
     {
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
-        public DbSet<Project> Projects { get; set; }
+        public required DbSet<Project> Projects { get; set; }
 
-        public DbSet<Receiver> Receivers { get; set; }
+        public required DbSet<Receiver> Receivers { get; set; }
 
-        public DbSet<Device> Devices { get; set; }
+        public required DbSet<Device> Devices { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

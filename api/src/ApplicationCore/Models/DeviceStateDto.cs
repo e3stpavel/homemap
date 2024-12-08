@@ -4,9 +4,12 @@ using System.Text.Json.Serialization;
 
 namespace Homemap.ApplicationCore.Models
 {
-    [JsonDerivedType(typeof(SocketDeviceStateDto), DeviceStateConstants.SOCKET)]
-    [JsonDerivedType(typeof(ACDeviceStateDto), DeviceStateConstants.AC)]
-    [JsonDerivedType(typeof(ThermostatDeviceStateDto), DeviceStateConstants.THERMOSTAT)]
-    [JsonDerivedType(typeof(LightbulbDeviceStateDto), DeviceStateConstants.LIGHTBULB)]
-    public abstract record DeviceStateDto(bool IsTurnedOn);
+    [JsonDerivedType(typeof(ACStateDto), typeDiscriminator: DeviceConstants.AC)]
+    [JsonDerivedType(typeof(ThermostatStateDto), typeDiscriminator: DeviceConstants.THERMOSTAT)]
+    [JsonDerivedType(typeof(SocketStateDto), typeDiscriminator: DeviceConstants.SOCKET)]
+    [JsonDerivedType(typeof(LightbulbStateDto), typeDiscriminator: DeviceConstants.LIGHTBULB)]
+    public abstract record DeviceStateDto
+    {
+        public bool IsTurnedOn { get; init; }
+    }
 }

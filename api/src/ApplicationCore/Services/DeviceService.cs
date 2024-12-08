@@ -68,7 +68,7 @@ namespace Homemap.ApplicationCore.Services
 
         public async Task<ErrorOr<DeviceStateDto>> GetDeviceStateByIdAsync(int id, CancellationToken cancellationToken)
         {
-            Device? device = await _deviceRepository.FindByIdAsync(id);
+            Device? device = await _deviceRepository.FindByIdIncludingReceiverAsync(id);
 
             if (device is null)
                 return UserErrors.EntityNotFound($"Device was not found ('{id}')");
@@ -98,7 +98,7 @@ namespace Homemap.ApplicationCore.Services
 
         public async Task<ErrorOr<Updated>> SetDeviceStateByIdAsync(int id, DeviceStateDto stateDto)
         {
-            Device? device = await _deviceRepository.FindByIdAsync(id);
+            Device? device = await _deviceRepository.FindByIdIncludingReceiverAsync(id);
 
             if (device is null)
                 return UserErrors.EntityNotFound($"Device was not found ('{id}')");

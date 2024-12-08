@@ -15,7 +15,7 @@ namespace Homemap.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async new Task<Device?> FindByIdAsync(int id)
+        public async Task<Device?> FindByIdIncludingReceiverAsync(int id)
         {
             return await _context.Devices
                 .Include(e => e.Receiver)

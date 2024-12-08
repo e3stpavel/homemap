@@ -1,7 +1,8 @@
 ﻿using Homemap.ApplicationCore.Constants;
+using Homemap.ApplicationCore.Models.DeviceStates;
 using System.Text.Json.Serialization;
 
-namespace Homemap.ApplicationCore.Models.DeviceStates.Core
+namespace Homemap.ApplicationCore.Models
 {
     [JsonDerivedType(typeof(ACStateDto), typeDiscriminator: DeviceConstants.AC)]
     [JsonDerivedType(typeof(ThermostatStateDto), typeDiscriminator: DeviceConstants.THERMOSTAT)]

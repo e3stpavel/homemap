@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Homemap.ApplicationCore.Interfaces.Messaging;
-using Homemap.ApplicationCore.Models.DeviceLogs;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
+using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.Infrastructure.Messaging.Services.Publishing;
 using Homemap.Infrastructure.Messaging.Services.Subscription;
 using Microsoft.AspNetCore.Http.Json;
@@ -35,7 +34,7 @@ namespace Homemap.Infrastructure.Messaging.Core
         {
             return typeof(T) switch
             {
-                Type type when type == typeof(DeviceStateMessage) =>
+                Type type when type == typeof(StateMessageDto) =>
                     (IPublishingService<T>)new DeviceStatePublishingService(
                         topic,
                         _messagingClient,
@@ -52,20 +51,20 @@ namespace Homemap.Infrastructure.Messaging.Core
 
             return typeof(T) switch
             {
-                Type type when type == typeof(DeviceLogMessage) =>
+                Type type when type == typeof(LogMessageDto) =>
                     (ISubscriptionService<T>)new DeviceLogSubscriptionService(
                         topic,
                         _messagingClient,
                         _jsonSerializerOptions,
-                        scope.ServiceProvider.GetRequiredService<IValidator<DeviceLogMessage>>()
+                        scope.ServiceProvider.GetRequiredService<IValidator<LogMessageDto>>()
                     ),
 
-                Type type when type == typeof(DeviceStateMessage) =>
+                Type type when type == typeof(StateMessageDto) =>
                     (ISubscriptionService<T>)new DeviceStateSubscriptionService(
                         topic,
                         _messagingClient,
                         _jsonSerializerOptions,
-                        scope.ServiceProvider.GetRequiredService<IValidator<DeviceStateMessage>>()
+                        scope.ServiceProvider.GetRequiredService<IValidator<StateMessageDto>>()
                     ),
 
                 _ => throw new NotImplementedException()

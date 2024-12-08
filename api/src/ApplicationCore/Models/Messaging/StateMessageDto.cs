@@ -1,6 +1,6 @@
-﻿namespace Homemap.ApplicationCore.Models.DeviceStates.Core
+﻿namespace Homemap.ApplicationCore.Models.Messaging
 {
-    public record DeviceStateMessage
+    public record StateMessageDto
     {
         public required string Status { get; init; }
 

@@ -2,7 +2,6 @@
 using FluentValidation;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Models;
-using Homemap.ApplicationCore.Models.DeviceLogs;
 using Homemap.WebAPI.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

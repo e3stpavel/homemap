@@ -1,4 +1,4 @@
-﻿using Homemap.ApplicationCore.Models.DeviceStates.Core;
+﻿using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.Infrastructure.Messaging.Core;
 using Homemap.Infrastructure.Messaging.Models;
 using System.Text.Json;
@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Homemap.Infrastructure.Messaging.Services.Publishing
 {
-    internal class DeviceStatePublishingService : AbstractPublishingService<DeviceStateMessage>
+    internal class DeviceStatePublishingService : AbstractPublishingService<StateMessageDto>
     {
         public DeviceStatePublishingService
         (

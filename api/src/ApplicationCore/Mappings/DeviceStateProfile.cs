@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
+using Homemap.ApplicationCore.Models;
 using Homemap.ApplicationCore.Models.DeviceStates;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
+using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.Domain.Core;
 using Homemap.Domain.DeviceStates;
 
@@ -27,8 +28,8 @@ namespace Homemap.ApplicationCore.Mappings
             CreateMap<ThermostatState, ThermostatStateDto>()
                 .ReverseMap();
 
-            CreateMap<DeviceState, DeviceStateMessage>()
-                .ForMember(nameof(DeviceStateMessage.Status),
+            CreateMap<DeviceState, StateMessageDto>()
+                .ForMember(nameof(StateMessageDto.Status),
                     opt => opt.MapFrom(src => src.IsTurnedOn ? "on" : "off"))
                 .IncludeAllDerived()
                 .ReverseMap()
@@ -36,16 +37,16 @@ namespace Homemap.ApplicationCore.Mappings
                     opt => opt.MapFrom(src => src.Status == "on"))
                 .IncludeAllDerived();
 
-            CreateMap<ACState, DeviceStateMessage>()
+            CreateMap<ACState, StateMessageDto>()
                 .ReverseMap();
 
-            CreateMap<LightbulbState, DeviceStateMessage>()
+            CreateMap<LightbulbState, StateMessageDto>()
                 .ReverseMap();
 
-            CreateMap<SocketState, DeviceStateMessage>()
+            CreateMap<SocketState, StateMessageDto>()
                 .ReverseMap();
 
-            CreateMap<ThermostatState, DeviceStateMessage>()
+            CreateMap<ThermostatState, StateMessageDto>()
                 .ReverseMap();
         }
     }

@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
+using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.ApplicationCore.Validators.Extensions;
 
-namespace Homemap.ApplicationCore.Validators.DeviceStateDtoValidators.Core
+namespace Homemap.ApplicationCore.Validators.Messaging
 {
-    public class DeviceStateMessageValidator : AbstractValidator<DeviceStateMessage>
+    public class StateMessageDtoValidator : AbstractValidator<StateMessageDto>
     {
-        public DeviceStateMessageValidator()
+        public StateMessageDtoValidator()
         {
             RuleFor(x => x.Status)
                 .Must(status => new List<string>(["on", "off"]).Contains(status));

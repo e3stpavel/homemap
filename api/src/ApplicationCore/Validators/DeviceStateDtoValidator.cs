@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
+using Homemap.ApplicationCore.Models;
+using Homemap.ApplicationCore.Validators.DeviceStateDtoValidators;
 
-namespace Homemap.ApplicationCore.Validators.DeviceStateDtoValidators.Core
+namespace Homemap.ApplicationCore.Validators
 {
     public class DeviceStateDtoValidator : AbstractValidator<DeviceStateDto>
     {

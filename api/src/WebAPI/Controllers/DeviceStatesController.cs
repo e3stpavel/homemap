@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Homemap.ApplicationCore.Interfaces.Services;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
+using Homemap.ApplicationCore.Models;
 using Homemap.WebAPI.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;

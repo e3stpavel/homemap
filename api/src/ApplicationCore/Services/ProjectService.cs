@@ -5,7 +5,7 @@ using Homemap.ApplicationCore.Interfaces.Messaging;
 using Homemap.ApplicationCore.Interfaces.Repositories;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Models;
-using Homemap.ApplicationCore.Models.DeviceLogs;
+using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.Domain.Core;
 using System.Runtime.CompilerServices;
 
@@ -50,12 +50,12 @@ namespace Homemap.ApplicationCore.Services
             );
 
             string topic = $"prj/{id}/rcv/+/dev/+/logs";
-            using var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<DeviceLogMessage>(topic);
+            using var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<LogMessageDto>(topic);
             await subscriptionService.SubscribeAsync();
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                DeviceLogMessage? logMessage = await subscriptionService.GetNextMessageAsync(cancellationToken);
+                LogMessageDto? logMessage = await subscriptionService.GetNextMessageAsync(cancellationToken);
                 if (logMessage is null)
                     continue;
 

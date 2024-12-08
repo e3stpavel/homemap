@@ -1,6 +1,5 @@
 ﻿using ErrorOr;
 using Homemap.ApplicationCore.Models;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
 
 namespace Homemap.ApplicationCore.Interfaces.Services
 {

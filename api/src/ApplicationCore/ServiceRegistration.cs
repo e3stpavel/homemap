@@ -1,7 +1,6 @@
 using FluentValidation;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Mappings;
-using Homemap.ApplicationCore.Models;
 using Homemap.ApplicationCore.Services;
 using Homemap.ApplicationCore.Validators;
 using Microsoft.Extensions.DependencyInjection;

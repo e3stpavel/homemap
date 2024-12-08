@@ -5,7 +5,7 @@ using Homemap.ApplicationCore.Interfaces.Messaging;
 using Homemap.ApplicationCore.Interfaces.Repositories;
 using Homemap.ApplicationCore.Interfaces.Services;
 using Homemap.ApplicationCore.Models;
-using Homemap.ApplicationCore.Models.DeviceStates.Core;
+using Homemap.ApplicationCore.Models.Messaging;
 using Homemap.Domain.Core;
 using Homemap.Domain.Devices;
 using Homemap.Domain.DeviceStates;
@@ -74,10 +74,10 @@ namespace Homemap.ApplicationCore.Services
                 return UserErrors.EntityNotFound($"Device was not found ('{id}')");
 
             // assume that device has published the initial state message with retain flag
-            DeviceStateMessage? stateMessage;
+            StateMessageDto? stateMessage;
             string topic = $"prj/{device.Receiver.ProjectId}/rcv/{device.ReceiverId}/dev/{id}/state";
 
-            using (var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<DeviceStateMessage>(topic))
+            using (var subscriptionService = _messagingServiceFactory.CreateSubscriptionService<StateMessageDto>(topic))
             {
                 await subscriptionService.SubscribeAsync();
                 stateMessage = await subscriptionService.GetNextMessageAsync(cancellationToken);
@@ -115,9 +115,9 @@ namespace Homemap.ApplicationCore.Services
                 return UserErrors.IllegalOperation("Device state is not assignable to this device");
 
             string topic = $"prj/{device.Receiver.ProjectId}/rcv/{device.ReceiverId}/dev/{id}/set-state";
-            var publishingService = _messagingServiceFactory.CreatePublishingService<DeviceStateMessage>(topic);
+            var publishingService = _messagingServiceFactory.CreatePublishingService<StateMessageDto>(topic);
 
-            DeviceStateMessage stateMessage = _mapper.Map<DeviceStateMessage>(state);
+            StateMessageDto stateMessage = _mapper.Map<StateMessageDto>(state);
             await publishingService.PublishAsync(stateMessage);
 
             return Result.Updated;

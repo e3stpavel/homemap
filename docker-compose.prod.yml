@@ -1,6 +1,61 @@
 services:
   nuxt:
     image: 662032419283.dkr.ecr.eu-north-1.amazonaws.com/homemap/front:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nuxt.entrypoints=websecure"
+      - "traefik.http.routers.nuxt.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.services.nuxt.loadbalancer.server.port=3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE_URL=https://api.${DOMAIN}/api
+    networks:
+      - traefik_net
   
   dotnet:
     image: 662032419283.dkr.ecr.eu-north-1.amazonaws.com/homemap/back:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dotnet.entrypoints=websecure"
+      - "traefik.http.routers.dotnet.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.services.dotnet.loadbalancer.server.port=8080"
+    networks:
+      - traefik_net
+
+  nanomq:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.nanomq.entrypoints=mqtt"
+      - "traefik.tcp.routers.nanomq.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.nanomq.loadbalancer.server.port=1883"
+
+      # - "traefik.tcp.routers.nanomq-secure.entrypoints=mqttsecure"
+      # - "traefik.tcp.routers.nanomq-secure.rule=HostSNI(`broker.${DOMAIN}/`)"
+      # - "traefik.tcp.routers.nanomq-secure.tls.certresolver=letsencrypt"
+      # - "traefik.tcp.routers.nanomq-secure.service=nanomq-secure"
+      # - "traefik.tcp.services.nanomq-secure.loadbalancer.server.port=1883"
+    networks:
+      - traefik_net
+
+  traefik:
+    container_name: traefik-reverse-proxy
+    restart: unless-stopped
+    image: traefik:v3.2
+    ports:
+      - 80:80
+      - 443:443
+      - 1883:1883
+      - 8080:8080
+      # - 8883:8883
+    environment:
+      - TRAEFIK_PROVIDERS_DOCKER_DEFAULTRULE=Host(`{{ normalize trimPrefix `/` .Name }}.${DOMAIN}`)
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=${ACME_EMAIL}
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml
+      - ./letsencrypt:/etc/traefik/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik_net
+
+networks:
+  traefik_net:
+    external: true

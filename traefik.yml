@@ -1,0 +1,41 @@
+# Docker configuration backend
+providers:
+  docker:
+    network: traefik_net
+    exposedByDefault: false
+
+entryPoints:
+  web:
+    address: ':80'
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+    
+  websecure:
+    address: ':443'
+    asDefault: true
+    http:
+      tls:
+        certResolver: letsencrypt
+
+  traefik:
+    address: ':8080'
+  
+  mqtt:
+    address: ':1883'
+  
+  # the tiny version of nanomq doesn't come with tls support
+  # mqttsecure:
+  #   address: ':8883'
+
+api:
+  dashboard: true
+  insecure: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      storage: /etc/traefik/letsencrypt/acme.json
+      tlsChallenge: { }

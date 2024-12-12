@@ -3,6 +3,7 @@ services:
     build:
       target: dev
     ports:
+      - 3000:3000
       - 24678:24678
     env_file:
       - ./app/.env
@@ -15,6 +16,7 @@ services:
       target: dev
     ports:
       - 7185:7185
+      - 8080:8080
     volumes:
       - ./api:/app
       - ~/.aspnet/https:/https:ro
@@ -23,6 +25,12 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     env_file:
       - ./api/.env
+
+  nanomq:
+    ports:
+      - 1883:1883
+      # - 8083:8083
+      # - 8883:8883
 
 volumes:
   node_modules:

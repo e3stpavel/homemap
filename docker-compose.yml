@@ -4,29 +4,30 @@ services:
     restart: unless-stopped
     build:
       context: ./app
-    ports:
-      - 3000:3000
   
   dotnet:
     container_name: dotnet-api
     restart: unless-stopped
     build:
       context: ./api
-    ports:
-      - 8080:8080
+    volumes:
+      - db_data:/app/data
+    depends_on:
+      - nanomq
     networks:
-      - mq
+      - mq_net
 
   nanomq:
     container_name: nanomq-broker
     restart: unless-stopped
     image: emqx/nanomq:latest
-    ports:
-      - 1883:1883
-      # - 8083:8083
-      # - 8883:8883
+    volumes:
+      - ./nanomq.conf:/etc/nanomq.conf:ro
     networks:
-      - mq
+      - mq_net
+
+volumes:
+  db_data:
 
 networks:
-  mq:
+  mq_net:

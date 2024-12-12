@@ -1,1 +1,8 @@
-{}
+{
+  "yaml.schemas": {
+    "https://json.schemastore.org/traefik-v3.json": [
+      "traefik.yml",
+      "traefik.yaml",
+    ],
+  },
+}

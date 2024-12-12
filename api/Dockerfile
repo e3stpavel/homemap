@@ -42,4 +42,4 @@ RUN addgroup -S runner && adduser -S runner -G runner
 USER runner
 
 CMD dotnet Homemap.WebAPI.dll
-EXPOSE 80
+EXPOSE 8080

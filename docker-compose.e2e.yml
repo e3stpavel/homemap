@@ -5,4 +5,6 @@ services:
     network_mode: 'service:dotnet'
     volumes:
       - ./api/test/e2e:/etc/newman
-    command: run /etc/newman/homemap-e2e-tests.postman_collection.json -e /etc/newman/homemap_env.postman_environment.json
+    command: >
+      run /etc/newman/homemap-e2e-tests.postman_collection.json \
+        --environment /etc/newman/homemap_env.postman_environment.json

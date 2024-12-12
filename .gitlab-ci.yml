@@ -1,3 +1,16 @@
+default:
+  image: docker:27.3.1-alpine3.20
+  services:
+    - docker:27.3.1-alpine3.20
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install --break-system-packages awscli
+    - aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REGISTRY}
+  after_script:
+    - docker logout ${DOCKER_REGISTRY}
+  tags:
+    - itb2203
+
 variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
@@ -5,18 +18,17 @@ variables:
 
 stages:
   - build
-  - api-test
-
-before_script:
-  - apk add --no-cache curl jq python3 py3-pip
-  - pip install --break-system-packages awscli
-  - aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REGISTRY}
+  - test
+  - deploy
 
 build:
-  image:
-    name: docker:27.3.1-alpine3.20
-  services:
-    - docker:27.3.1-alpine3.20
+  inherit:
+    default:
+      - image
+      - services
+      - before_script
+      - after_script
+      - tags
   only:
     - main
   script:
@@ -24,29 +36,59 @@ build:
     - docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
     - echo Pushing images to Amazon ECR...
     - docker-compose -f docker-compose.yml -f docker-compose.prod.yml push
-  after_script:
-    - docker logout ${DOCKER_REGISTRY}
   stage: build
   tags:
     - itb2203
 
-api-test:
+test/e2e/api:
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
-  image:
-    name: docker:27.3.1-alpine3.20
-  services:
-    - docker:27.3.1-alpine3.20
+  inherit:
+    default:
+      - image
+      - services
+      - before_script
+      - after_script
+      - tags
   only:
     - main
   script:
     - echo Testing API using Postman...
-    - docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.e2e.yml up --abort-on-container-exit --exit-code-from newman
-    - echo Tearing donw containers with volumes...
+    - >
+      docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.e2e.yml up \
+        --abort-on-container-exit --exit-code-from newman
+    - echo Tearing down containers with volumes...
     - docker-compose down -v
+  stage: test
+
+deploy:
+  image: alpine:latest
+  inherit:
+    default:
+      - tags
+  when: manual
+  only:
+    - main
+  before_script:
+    # - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+    - "apt-get update -y && apt-get install openssh-client -y"
+    
+    - mkdir -v -m 700 -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+
+    - eval $(ssh-agent -s)
+
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H $DOMAIN >> ~/.ssh/known_hosts
+    # - chmod 644 ~/.ssh/known_hosts
+  script:
+    - scp docker-compose.yml docker-compose.prod.yml nanomq.conf traefik.yml ubuntu@${DOMAIN}:~/
+    - >
+      ssh ubuntu@${DOMAIN} \
+        "(aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REGISTRY}) \
+        && DOMAIN=$DOMAIN ACME_EMAIL=$ACME_EMAIL docker compose -f ~/docker-compose.yml -f ~/docker-compose.prod.yml up -d"
   after_script:
-    - docker logout ${DOCKER_REGISTRY}
-  stage: api-test
-  tags:
-    - itb2203
+    - exit
+  stage: deploy

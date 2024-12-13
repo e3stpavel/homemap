@@ -18,6 +18,10 @@ services:
       - "traefik.http.routers.dotnet.entrypoints=websecure"
       - "traefik.http.routers.dotnet.rule=Host(`api.${DOMAIN}`)"
       - "traefik.http.services.dotnet.loadbalancer.server.port=8080"
+
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlistregex=https?://{DOMAIN}"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
+      - "traefik.http.routers.dotnet.middlewares=cors"
     networks:
       - traefik_net
 

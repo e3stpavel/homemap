@@ -22,13 +22,6 @@ stages:
   - deploy
 
 build:
-  inherit:
-    default:
-      - image
-      - services
-      - before_script
-      - after_script
-      - tags
   only:
     - main
   script:
@@ -44,13 +37,6 @@ test/e2e/api:
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
-  inherit:
-    default:
-      - image
-      - services
-      - before_script
-      - after_script
-      - tags
   only:
     - main
   script:

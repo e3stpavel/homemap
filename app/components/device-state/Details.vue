@@ -1,11 +1,35 @@
 <script setup lang="ts">
+import { onWatcherCleanup } from 'vue'
+
 const devicesStore = useDevicesStore()
+const deviceStateStore = useDeviceStateStore()
+
 const { currentDeviceId } = storeToRefs(devicesStore)
+const { currentDeviceState } = storeToRefs(deviceStateStore)
+
+watch(currentDeviceId, async () => {
+  const abortController = new AbortController()
+  const signal = abortController.signal
+  onWatcherCleanup(() => abortController.abort())
+
+  try {
+    await deviceStateStore.getCurrentDeviceState(signal)
+  }
+  catch (error) {
+    if (signal.aborted)
+      return
+
+    if (error instanceof Error) {
+      console.error(error)
+    }
+  }
+})
 </script>
 
 <template>
   <span v-if="currentDeviceId">
     hello {{ currentDeviceId }}
+    state {{ currentDeviceState }}
   </span>
   <div
     v-else

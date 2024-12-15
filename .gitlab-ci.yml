@@ -1,8 +1,9 @@
 default:
   image: docker:27.3.1-alpine3.20
   services:
-    - docker:27.3.1-alpine3.20
+    - docker:27.3.1-alpine3.20-dind
   before_script:
+    - docker info
     - apk add --no-cache curl jq python3 py3-pip
     - pip install --break-system-packages awscli
     - aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REGISTRY}

@@ -24,12 +24,19 @@ watch(currentDeviceId, async () => {
     }
   }
 })
+
+const isTurnedOn = ref(false)
 </script>
 
 <template>
   <span v-if="currentDeviceId">
     hello {{ currentDeviceId }}
     state {{ currentDeviceState }}
+    <Switch
+      v-model="isTurnedOn"
+      :label="isTurnedOn ? 'On' : 'Off'"
+      name="isTurnedOn"
+    />
   </span>
   <div
     v-else

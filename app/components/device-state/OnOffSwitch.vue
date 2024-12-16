@@ -6,6 +6,10 @@ const model = defineModel<boolean>({
 const label = computed(() =>
   model.value ? 'On' : 'Off',
 )
+
+const emits = defineEmits<{
+  change: []
+}>()
 </script>
 
 <template>
@@ -13,5 +17,7 @@ const label = computed(() =>
     v-model="model"
     :label="label"
     name="isTurnedOn"
+    required
+    @update:checked="emits('change')"
   />
 </template>

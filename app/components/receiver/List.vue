@@ -62,18 +62,26 @@ async function handleToggle(event: TreeItemToggleEvent<TreeNode>) {
 
 function handleSelect(event: TreeItemSelectEvent<TreeNode>) {
   const treeItem = event.detail
-  if (!treeItem.value || treeItem.value.type === 'receiver')
+  if (!treeItem.value)
     return
 
   const item = treeItem.value
 
   if (!treeItem.isSelected) {
-    devicesStore.setCurrentDeviceId(item.id)
-    return
+    if (item.type !== 'receiver') {
+      devicesStore.setCurrentDeviceId(item.id)
+      return
+    }
   }
 
   devicesStore.unsetCurrentDeviceId()
 }
+
+// TODO: can be done better, but we need to unset it
+//  because we probably are moving to another project
+onUnmounted(() =>
+  devicesStore.unsetCurrentDeviceId(),
+)
 </script>
 
 <template>

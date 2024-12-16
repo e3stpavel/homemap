@@ -1,4 +1,8 @@
 <script setup lang="ts">
+const emits = defineEmits<{
+  change: []
+}>()
+
 const model = defineModel<number>({
   required: true,
 })
@@ -16,6 +20,7 @@ const displayValue = computed(() => {
     :min="1500"
     :max="7000"
     :step="300"
+    @value-commit="emits('change')"
   >
     <template #label="{ id, label }">
       <div class="flex items-center justify-between gap-4">

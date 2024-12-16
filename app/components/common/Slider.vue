@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForwardProps, type SliderRootProps } from 'radix-vue'
+import { useForwardPropsEmits, type SliderRootEmits, type SliderRootProps } from 'radix-vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -13,7 +13,8 @@ interface Props extends Omit<SliderRootProps, 'defaultValue' | 'modelValue'> {
 }
 
 const props = defineProps<Props>()
-const forward = useForwardProps(props)
+const emits = defineEmits<SliderRootEmits>()
+const forward = useForwardPropsEmits(props, emits)
 
 const id = useId()
 const model = defineModel<number>({
@@ -59,11 +60,11 @@ const value = computed({
         <SliderRoot
           v-bind="forward"
           v-model="value"
-          class="relative w-full flex touch-none select-none items-center data-[orientation=vertical]:(h-full w-auto flex-col) data-[disabled]:opacity-60"
+          class="group/slider relative w-full flex touch-none select-none items-center data-[orientation=vertical]:(h-full w-auto flex-col) data-[disabled]:opacity-60"
           :aria-labelledby="id"
         >
           <SliderTrack class="relative grow overflow-hidden rounded-full bg-zinc-100 data-[orientation=horizontal]:(h-2 w-full) data-[orientation=vertical]:(h-full w-2)">
-            <SliderRange class="absolute bg-blue-600 data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full" />
+            <SliderRange class="absolute bg-blue-600 data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full group-hover/slider:bg-blue-500" />
           </SliderTrack>
           <Tooltip :label="`${model}`">
             <SliderThumb

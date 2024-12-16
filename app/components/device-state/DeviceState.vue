@@ -17,6 +17,10 @@ const components = {
   lightTemperature: DeviceStateLightTemperatureSlider,
   brightness: DeviceStateBrightnessSlider,
 }
+
+const emits = defineEmits<{
+  change: []
+}>()
 </script>
 
 <template>
@@ -32,6 +36,7 @@ const components = {
         <component
           :is="components[key]"
           v-model="model[key]"
+          @change="emits('change')"
         />
       </div>
     </template>

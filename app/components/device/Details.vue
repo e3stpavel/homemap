@@ -1,29 +1,37 @@
 <script setup lang="ts">
 import { onWatcherCleanup } from 'vue'
+import type { DeviceState } from '~/domain/device-state'
+import { useDeviceStateService } from '~/services/device-state'
 
 const devicesStore = useDevicesStore()
-const deviceStateStore = useDeviceStateStore()
+const deviceStateService = useDeviceStateService()
 
+const currentDeviceState = ref<DeviceState>()
 const { currentDeviceId } = storeToRefs(devicesStore)
-const { currentDeviceState } = storeToRefs(deviceStateStore)
 
 const isLoading = ref(false)
 
-watch(currentDeviceId, async () => {
-  isLoading.value = true
+watchEffect(async () => {
   currentDeviceState.value = undefined
+
+  if (!currentDeviceId.value)
+    return
 
   const abortController = new AbortController()
   const signal = abortController.signal
   onWatcherCleanup(() => abortController.abort())
 
+  isLoading.value = true
+
   try {
-    await deviceStateStore.getCurrentDeviceState(signal)
+    currentDeviceState.value = await deviceStateService.getDeviceState(currentDeviceId.value, signal)
     isLoading.value = false
   }
   catch (error) {
-    if (signal.aborted)
+    if (signal.aborted) {
+      isLoading.value = false
       return
+    }
 
     if (error instanceof Error) {
       console.error(error)
@@ -31,27 +39,19 @@ watch(currentDeviceId, async () => {
   }
 })
 
-// using watcher here because native html form does not have any
-//  change event for programmatically updated inputs
-watchDebounced(
-  currentDeviceState,
-  async (next, prev) => {
-    if (!prev || !next)
-      return
+const handleChange = useDebounceFn(async () => {
+  if (!currentDeviceId.value || !currentDeviceState.value)
+    return
 
-    try {
-      await deviceStateStore.updateCurrentDeviceState(next)
-    }
-    catch (error) {
-      if (error instanceof Error)
-        console.error(error)
-    }
-  },
-  {
-    debounce: 1000,
-    deep: true,
-  },
-)
+  try {
+    // TODO: we might show some sort if loading spinner when pushing the state
+    await deviceStateService.setDeviceState(currentDeviceId.value, currentDeviceState.value)
+  }
+  catch (error) {
+    if (error instanceof Error)
+      console.error(error)
+  }
+}, 1500)
 </script>
 
 <template>
@@ -64,6 +64,7 @@ watchDebounced(
         <DeviceState
           v-if="!isLoading && currentDeviceState"
           v-model="currentDeviceState"
+          @change="handleChange"
         />
         <div v-else>
           <div class="h-7 w-24 animate-pulse rounded bg-zinc-200" />

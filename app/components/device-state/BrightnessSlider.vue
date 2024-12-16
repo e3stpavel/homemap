@@ -1,4 +1,8 @@
 <script setup lang="ts">
+const emits = defineEmits<{
+  change: []
+}>()
+
 const model = defineModel<number>({
   required: true,
 })
@@ -14,6 +18,7 @@ const displayValue = computed(() => {
     label="Brightness"
     name="brightness"
     :step="10"
+    @value-commit="emits('change')"
   >
     <template #label="{ id, label }">
       <div class="flex items-center justify-between gap-4">

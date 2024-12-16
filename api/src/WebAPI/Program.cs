@@ -25,7 +25,12 @@ builder.Services
             .AllowAnyHeader()
             .AllowAnyMethod();
     }))
-    .AddControllers();
+    .AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        // allow `$type` to be anywhere in request body
+        opts.JsonSerializerOptions.AllowOutOfOrderMetadataProperties = true;
+    });
 
 var app = builder.Build();
 app.UseHttpsRedirection();

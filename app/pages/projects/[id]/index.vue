@@ -44,7 +44,9 @@
         <h2 class="text-xl font-semibold tracking-tight">
           Details
         </h2>
-        <DeviceStateDetails />
+        <div class="mt-4">
+          <DeviceStateDetails />
+        </div>
       </div>
     </div>
   </div>

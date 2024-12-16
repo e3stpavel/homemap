@@ -24,30 +24,20 @@ watch(currentDeviceId, async () => {
     }
   }
 })
-
-const isTurnedOn = ref(false)
-const temperature = ref(25)
 </script>
 
 <template>
-  <span v-if="currentDeviceId">
+  <div
+    v-if="currentDeviceId"
+    class="space-y-4"
+  >
     hello {{ currentDeviceId }}
     state {{ currentDeviceState }}
-    <div>
-      <Switch
-        v-model="isTurnedOn"
-        :label="isTurnedOn ? 'On' : 'Off'"
-        name="isTurnedOn"
-      />
-    </div>
-    <div>
-      <Slider
-        v-model="temperature"
-        label="Temperature"
-        name="temperature"
-      />
-    </div>
-  </span>
+    <DeviceState
+      v-if="currentDeviceState"
+      v-model="currentDeviceState"
+    />
+  </div>
   <div
     v-else
     class="mt-2 border border-2 rounded-lg border-dashed px-4 py-8 hover:border-zinc-300"

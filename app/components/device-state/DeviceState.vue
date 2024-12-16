@@ -20,7 +20,7 @@ const components = {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <form class="space-y-4">
     <template
       v-for="(_, key) in model"
       :key="key"
@@ -35,5 +35,5 @@ const components = {
         />
       </div>
     </template>
-  </div>
+  </form>
 </template>

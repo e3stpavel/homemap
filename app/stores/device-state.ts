@@ -9,8 +9,11 @@ export const useDeviceStateStore = defineStore('device-state', () => {
   const currentDeviceState = ref<DeviceState>()
 
   async function getCurrentDeviceState(abortSignal: AbortSignal) {
-    if (!currentDeviceId.value)
+    if (!currentDeviceId.value) {
+      // reset state if device was de-selected
+      // currentDeviceState.value = undefined
       return
+    }
 
     currentDeviceState.value = await deviceStateService.getDeviceState(currentDeviceId.value, abortSignal)
     return currentDeviceState.value

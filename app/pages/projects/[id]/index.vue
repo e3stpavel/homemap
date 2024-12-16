@@ -39,14 +39,8 @@
       <div class="flex-1 overflow-hidden border rounded-lg bg-white p-2 shadow-sm">
         <ReceiverList />
       </div>
-
       <div class="xl:(sticky top-8 w-96)">
-        <h2 class="text-xl font-semibold tracking-tight">
-          Details
-        </h2>
-        <div class="mt-4">
-          <DeviceStateDetails />
-        </div>
+        <DeviceDetails />
       </div>
     </div>
   </div>

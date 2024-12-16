@@ -28,7 +28,7 @@ build:
     - docker logout ${DOCKER_REGISTRY}
   stage: build
   tags:
-    - itb2203
+    - self-hosted
 
 api-test:
   variables:
@@ -49,4 +49,4 @@ api-test:
     - docker logout ${DOCKER_REGISTRY}
   stage: api-test
   tags:
-    - itb2203
+    - self-hosted

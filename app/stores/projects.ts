@@ -39,9 +39,22 @@ export const useProjectsStore = defineStore('projects', () => {
       return
 
     const logs = projectService.streamDeviceLogsById(currentProjectId.value, signal)
-    for await (const log of logs) {
-      deviceLogs.unshift(log)
+
+    for (const log of logs) {
+      try {
+        const deviceLog = await log.read()
+        deviceLogs.unshift(deviceLog)
+      }
+      catch (error) {
+        if (!signal.aborted) {
+          if (error instanceof Error)
+            console.error(error)
+        }
+      }
     }
+
+    // just for demo cleans all the logs here
+    deviceLogs.splice(0, deviceLogs.length)
   }
 
   async function removeProject(projectId: Project['id']) {

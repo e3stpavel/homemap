@@ -62,14 +62,6 @@ export default defineNuxtConfig({
     },
   },
 
-  vite: {
-    esbuild: {
-      // https://github.com/evanw/esbuild/pull/3194
-      // https://github.com/evanw/esbuild/issues/2780
-      target: 'es6',
-    },
-  },
-
   // enables HMR for windows users, but it comes with great power comes great responsibility
   //  https://vite.dev/config/server-options.html#server-watch
   //  https://github.com/paulmillr/chokidar#performance

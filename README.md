@@ -106,3 +106,6 @@ This will be fixed later by using volumes and mounting SQLite related data separ
 
 ##### MQTT client
 If you want to see what is going on with your MQTT connection, which messages are sent and so on, you could download and install [MQTTX](https://mqttx.app/downloads).
+
+## License
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.

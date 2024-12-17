@@ -1,6 +1,27 @@
 # Homemap
 Software-as-a-Service that lets you manage your IoT devices with ease.
 
+# Demo
+Use this to send a state (`prj/1/rcv/2/dev/2/state`)
+
+```json
+{
+  "status": "on",
+  "lightTemperature": 6000,
+  "brightness": 60
+}
+```
+
+Use this to send a log (`prj/1/rcv/2/dev/2/logs`)
+
+```json
+{
+  "level": "info",
+  "message": "hello world",
+  "timestamp": "2024-12-16T15:28:52Z"
+}
+```
+
 ## Development
 If you are feeling adventurous, try using Docker.
 

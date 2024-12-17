@@ -13,7 +13,7 @@ ENV PATH="$PATH:/root/.dotnet/tools"
 
 # Run migrations
 #  why I use mkdir: https://stackoverflow.com/a/50786651
-RUN mkdir -v data
+RUN mkdir -v -p src/WebAPI/data
 RUN dotnet ef database update --project src/Infrastructure/Infrastructure.Data/Infrastructure.Data.csproj --startup-project src/WebAPI/WebAPI.csproj
 
 FROM base AS dev

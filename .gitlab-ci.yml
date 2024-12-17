@@ -40,6 +40,7 @@ test/e2e/api:
   only:
     - main
   script:
+    - docker network create traefik_net
     - echo Testing API using Postman...
     - >
       docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.e2e.yml up \

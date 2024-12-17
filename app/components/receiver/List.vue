@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TreeItemToggleEvent } from 'radix-vue'
+import type { TreeItemSelectEvent, TreeItemToggleEvent } from 'radix-vue'
 import type { Device } from '~/domain/device'
 import type { Receiver } from '~/domain/receiver'
 
@@ -59,6 +59,29 @@ async function handleToggle(event: TreeItemToggleEvent<TreeNode>) {
     }
   }
 }
+
+function handleSelect(event: TreeItemSelectEvent<TreeNode>) {
+  const treeItem = event.detail
+  if (!treeItem.value)
+    return
+
+  const item = treeItem.value
+
+  if (!treeItem.isSelected) {
+    if (item.type !== 'receiver') {
+      devicesStore.setCurrentDeviceId(item.id)
+      return
+    }
+  }
+
+  devicesStore.unsetCurrentDeviceId()
+}
+
+// TODO: can be done better, but we need to unset it
+//  because we probably are moving to another project
+onUnmounted(() =>
+  devicesStore.unsetCurrentDeviceId(),
+)
 </script>
 
 <template>
@@ -78,6 +101,7 @@ async function handleToggle(event: TreeItemToggleEvent<TreeNode>) {
       v-bind="item.bind"
       class="group/treeitem h-8 flex items-center gap-2 rounded px-2 sm:h-7 data-[selected]:(bg-blue-500 text-white hover:bg-blue-400) hover:bg-zinc-950/5 focus-visible:(ring-2 ring-white ring-inset)"
       @toggle="handleToggle"
+      @select="handleSelect"
     >
       <span class="text-zinc-600 group-data-[selected]/treeitem:text-blue-50">
         <div

@@ -23,16 +23,18 @@ export const useProjectService = () => {
       return projectSchema.parse(response)
     },
 
-    async *streamDeviceLogsById(id: Project['id'], signal: AbortSignal) {
-      const eventStream = createEventStream(`${baseUrl}/${id}/logs/stream`, {
+    *streamDeviceLogsById(id: Project['id'], signal: AbortSignal) {
+      const eventStream = createServerSentEventStream(`${baseUrl}/${id}/logs/stream`, {
         signal,
       })
 
-      for await (const event of eventStream) {
-        const validationResult = deviceLogSchema.safeParse(event.message)
-
-        if (validationResult.success)
-          yield validationResult.data
+      for (const event of eventStream) {
+        yield {
+          read: async () => {
+            const message = await event.message()
+            return deviceLogSchema.parse(message)
+          },
+        }
       }
     },
 

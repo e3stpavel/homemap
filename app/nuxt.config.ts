@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     'radix-vue/nuxt',
     '@pinia/nuxt',
     '@vueuse/nuxt',
+    'vue-sonner/nuxt',
   ],
 
   // https://nuxt.com/docs/guide/going-further/runtime-config
@@ -59,14 +60,6 @@ export default defineNuxtConfig({
           })),
         ),
       ],
-    },
-  },
-
-  vite: {
-    esbuild: {
-      // https://github.com/evanw/esbuild/pull/3194
-      // https://github.com/evanw/esbuild/issues/2780
-      target: 'es6',
     },
   },
 

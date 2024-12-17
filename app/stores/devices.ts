@@ -16,8 +16,22 @@ export const useDevicesStore = defineStore('devices', () => {
     return { success: false }
   }
 
+  const currentDeviceId = ref<Device['id']>()
+
+  function setCurrentDeviceId(deviceId: Device['id']) {
+    currentDeviceId.value = deviceId
+  }
+
+  function unsetCurrentDeviceId() {
+    currentDeviceId.value = undefined
+  }
+
   return {
     devices,
     getDevicesByReceiver,
+
+    currentDeviceId,
+    setCurrentDeviceId,
+    unsetCurrentDeviceId,
   }
 })

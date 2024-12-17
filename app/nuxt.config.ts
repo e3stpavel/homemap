@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     'radix-vue/nuxt',
     '@pinia/nuxt',
     '@vueuse/nuxt',
+    'vue-sonner/nuxt',
   ],
 
   // https://nuxt.com/docs/guide/going-further/runtime-config

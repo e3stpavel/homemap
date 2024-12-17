@@ -3,7 +3,9 @@ import { onWatcherCleanup } from 'vue'
 import type { DeviceState } from '~/domain/device-state'
 import { useDeviceStateService } from '~/services/device-state'
 
+const { $toast } = useNuxtApp()
 const devicesStore = useDevicesStore()
+const projectsStore = useProjectsStore()
 const deviceStateService = useDeviceStateService()
 
 const currentDeviceState = ref<DeviceState>()
@@ -46,6 +48,16 @@ const handleChange = useDebounceFn(async () => {
   try {
     // TODO: we might show some sort if loading spinner when pushing the state
     await deviceStateService.setDeviceState(currentDeviceId.value, currentDeviceState.value)
+    $toast.info('Device state was updated!', {
+      description: 'This device state has been modified',
+      action: {
+        label: 'View logs',
+        onClick: async () => await navigateTo({
+          name: 'projects-id-logs',
+          params: { id: projectsStore.currentProject!.id },
+        }),
+      },
+    })
   }
   catch (error) {
     if (error instanceof Error)
